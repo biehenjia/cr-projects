@@ -1,5 +1,20 @@
 import math 
 import numpy
+import cProfile
+import functools, time
+
+compute = 0
+
+def timing(function):
+    @functools.wrap(function)
+    def wrapper(*args, **kwargs):
+        t0 = time.perf_counter()
+        res = function(*args, **kwargs)
+        t1 = time.perf_counter()
+        compute += t1-t0
+        return res
+    return wrapper
+
 
 class CRobject:
 
@@ -97,6 +112,7 @@ class CRexpression(CRobject):
     def powto(self, target):
         return CRexpression('pow', self, target)
 
+    @timing
     def shift(self):
         for i in range(self.length):
             if self.isnotnumbers[i]:
@@ -268,6 +284,7 @@ class CRpuresum(CRobject):
         res.length = self.length * 2
         return res.selfsimplify()
     
+    @timing
     def shift(self):
         self.fastvalues[:-1] += self.fastvalues[1:]
         #for i in range(self.length-1):
@@ -390,7 +407,8 @@ class CRpureprod(CRobject):
             else:
                 return CRexpression('pow', self, target).selfsimplify()
             return result.selfsimplify()
-        
+    
+    @timing
     def shift(self):
         self.fastvalues[:-1] *= self.fastvalues[1:]
     
@@ -529,6 +547,7 @@ class CRtrigonometry(CRobject):
         super().initialize()
         return self.valueof()
     
+    @timing
     def shift(self):
         t = self.length // 2
         for i in range(t-1):
