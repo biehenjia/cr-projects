@@ -1,6 +1,7 @@
 #pragma once
 #include "crobj.hpp"
 
+
 class CRsum : public CRobj {
     public: 
         CRsum(size_t l); 
@@ -18,7 +19,8 @@ class CRsum : public CRobj {
         CRobj* pow(const CRobj& target) const  override;
         CRsum* pow(const CRnum& target) const;
 
-        CRsum* exp() const override;
+        //covariant
+        CRobj* exp() const override;
         CRobj* ln() const override;
 
         CRobj* sin() const override;
@@ -26,6 +28,7 @@ class CRsum : public CRobj {
 
         void simplify() override;
         CRsum* copy() const override;
-        double shift() override;
+        void shift() override;
+        double valueof() const override;
 
 };

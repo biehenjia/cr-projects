@@ -15,7 +15,6 @@ class CRnum : public CRobj {
         CRnum* mul(const CRnum& target) const ;
         CRsum* mul(const CRsum& target) const ;
         CRprod* mul(const CRprod& target) const ;
-        CRtrig* mul(const CRtrig& target) const ;
 
         CRobj* pow(const CRobj& target) const  override;
         CRnum* pow(const CRnum& target) const ;
@@ -30,12 +29,12 @@ class CRnum : public CRobj {
         CRnum* copy() const override;
 
         
-
+        
         double initialize(); 
         double valueof() const;
         bool isnumber() const override;
     
-    protected:
+        void shift() override;
         double value;
 
 };

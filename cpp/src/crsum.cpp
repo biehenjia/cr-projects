@@ -1,19 +1,20 @@
 #include "crsum.hpp"
 #include "crnum.hpp"
 #include "crexpr.hpp"
+#include "crprod.hpp"
+
 
 CRsum::CRsum(size_t l){
     length = l;
     operands.reserve(l);
 }
 
+
 CRsum::CRsum(double x, double h){ 
     length = 2;
-    operands.reserve(2);
-    CRnum* f = new CRnum(x);
-    CRnum* s = new CRnum(h);
-    operands = {&f,&s};
+    operands = {new CRnum(x), new CRnum(h)};
 }
+
 
 CRsum* CRsum::copy() const{
     auto result = new CRsum(length);
@@ -32,6 +33,7 @@ CRsum* CRsum::copy() const{
     }
     return result;
 }
+
 
 CRsum* CRsum::add(const CRsum& target) const {
 
@@ -59,6 +61,7 @@ CRsum* CRsum::add(const CRsum& target) const {
 
 }
 
+
 CRsum* CRsum::add(const CRnum& target) const { 
     auto result = this->copy();
     auto temp = new CRnum(result->operands[0]->valueof() + target.valueof());
@@ -69,6 +72,7 @@ CRsum* CRsum::add(const CRnum& target) const {
     return result;
 }
 
+
 CRsum* CRsum::mul(const CRnum& target) const { 
     auto result = new CRsum(length);
     for (size_t i = 0; i < length; i++){ 
@@ -77,6 +81,7 @@ CRsum* CRsum::mul(const CRnum& target) const {
     result->simplify(); 
     return result;
 }
+
 
 CRsum* CRsum::mul(const CRsum& target) const {
     if (length >= target.length){
@@ -112,6 +117,7 @@ CRsum* CRsum::mul(const CRsum& target) const {
             }
             result->operands[i] = new CRnum(r1);
         }
+        size_t length = newlength;
         result->simplify();
         return result;
     } else { 
@@ -121,17 +127,53 @@ CRsum* CRsum::mul(const CRsum& target) const {
     }
 }
 
+
 void CRsum::simplify() {
     size_t j = length - 1;
     while (j > 0 && operands[j]->valueof() == 0){
         delete operands[j];
         j--;
     }
+
     operands.resize(j+1);
 }
 
-double CRsum::shift() {
+void CRsum::shift() {
     for (size_t i = 0; i < length-1; i++){
         fastvalues[i] += fastvalues[i+1];
     }
+}
+
+CRobj* CRsum::add(const CRobj& target) const {
+    return new CRexpr(oc::ADD, *this->copy(), *target.copy());
+}
+
+
+CRobj* CRsum::mul(const CRobj& target) const {
+    return new CRexpr(oc::MUL, *this->copy(), *target.copy());
+}
+
+CRobj* CRsum::pow(const CRobj& target) const {
+    return new CRexpr(oc::POW, *this->copy(), *target.copy());
+}
+
+CRobj* CRsum::exp() const {
+    auto result = new CRprod(length);
+    for (size_t i = 0; i< length; i++){ 
+        result->operands[i] = new CRnum(std::exp(operands[i]->valueof()));
+    }
+    result->simplify();
+    return result;
+}
+
+CRobj* CRsum::ln() const {
+    return new CRexpr(oc::LN, *this->copy());
+}
+
+CRobj* CRsum::sin() const { 
+    return new CRexpr(oc::SIN, *this->copy());
+}
+
+CRobj* CRsum::cos() const { 
+    return new CRexpr(oc::COS, *this->copy());
 }

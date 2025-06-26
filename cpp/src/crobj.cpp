@@ -1,5 +1,15 @@
 #include "crobj.hpp"
 
+
+CRobj::CRobj(){ 
+    length = 0;
+}
+
+CRobj::CRobj(size_t l){
+    length = l;
+    operands.resize(l);
+}
+
 //recurse
 CRobj::~CRobj(){
     for (CRobj* p : operands){
@@ -37,7 +47,15 @@ double CRobj::initialize() {
     return fastvalues[0];
 }
 
+void CRobj::simplify(){
+    for (size_t i = 0; i < length; i++){ 
+        operands[i]->simplify();
+    }
+}
 
 
+void CRobj::shift() {
+    return;
+}
 
 
