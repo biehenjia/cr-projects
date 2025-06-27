@@ -36,7 +36,7 @@ enum class oc {
 
 class CRobj {
     public:
-        CRobj();
+        CRobj(){};
         CRobj(size_t l);
         virtual ~CRobj();
 
@@ -63,6 +63,6 @@ class CRobj {
         std::vector<double> fastvalues;
         std::vector<bool> isnumbers;
         size_t length;
-        bool initialized;
+        bool initialized = false;
     
 };

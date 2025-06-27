@@ -29,6 +29,5 @@ class CRsum : public CRobj {
         void simplify() override;
         CRsum* copy() const override;
         void shift() override;
-        double valueof() const override;
 
 };

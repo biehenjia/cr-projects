@@ -2,11 +2,11 @@
 #include "crnum.hpp"
 #include "crexpr.hpp"
 #include "crprod.hpp"
-
+#include <iostream>
 
 CRsum::CRsum(size_t l){
     length = l;
-    operands.reserve(l);
+    operands.resize(length,nullptr);
 }
 
 
@@ -84,40 +84,43 @@ CRsum* CRsum::mul(const CRnum& target) const {
 
 
 CRsum* CRsum::mul(const CRsum& target) const {
+    //std::cout<< "CALLED MUL\n";
     if (length >= target.length){
         
 
-        double  newlength = length + target.length -1;
-
+        size_t  newlength = length + target.length -1;
         auto result = new CRsum(newlength);
         double rtemp2,r1;
         
         //convolve
-        double n = length - 1;
-        double m = target.length -1;
-        for (double i= 0; i < newlength; i++){
+        size_t n = length - 1;
+        size_t m = target.length -1;
+        for (size_t i= 0; i < newlength; i++){
             double r1 = 0;
-            double ibound11 = std::max(0.0,i-m);
-            double ibound12 = std::min(i,n);
-            for (double j = ibound11; j < ibound12+1; j++){
+            size_t ibound11 = std::max(size_t(0),i-m);
+            size_t ibound12 = std::min(i,n);
+            for (size_t j = ibound11; j < ibound12+1; j++){
                 double r2 = 0;
-                double ibound21 = i-j;
-                double ibound22 = std::min(i,m);
-                for (double k = ibound21; k < ibound22+1; k++){
+                size_t ibound21 = i-j;
+                size_t ibound22 = std::min(i,m);
+                for (size_t k = ibound21; k < ibound22+1; k++){
                     double rtemp1 = choose(j,i-k);
-                    double rtemp11 = target.operands[i]->valueof(); 
+                    double rtemp11 = target.operands[k]->valueof(); 
                     rtemp1 *= rtemp11;
                     r2 += rtemp1;
                 }
                 double rtemp2 = choose(i,j);
                 r2 *= rtemp2;
-                double r = this->operands[i]->valueof();
+                double r = this->operands[j]->valueof();
                 rtemp2 *= r;
                 r1 += rtemp2;
             }
+            //std::cout<< "CALLED MUL\n";
+
             result->operands[i] = new CRnum(r1);
         }
-        size_t length = newlength;
+        //std::cout<<" we out da hood";
+        result->length = newlength;
         result->simplify();
         return result;
     } else { 

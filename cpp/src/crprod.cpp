@@ -103,8 +103,8 @@ CRprod* CRprod::pow(const CRnum& target) const {
 }
 
 CRprod* CRprod::pow(const CRsum& target) const{
-    double newlength = length + target.length -1;
-    double n,m;
+    size_t newlength = length + target.length -1;
+    size_t n,m;
     auto result = new CRprod(newlength);
     if (length > target.length){ 
         m = length;
@@ -113,20 +113,20 @@ CRprod* CRprod::pow(const CRsum& target) const{
         m = target.length;
         n = length;
     }
-    for (double i = 0; i < newlength; i++){
+    for (size_t i = 0; i < newlength; i++){
         double crs1 = 1.0;
-        double bound11 = std::max(0.0, i - n);
-        double bound12 = std::min(i, m);
+        size_t bound11 = std::max(size_t(0), i - n);
+        size_t bound12 = std::min(i, m);
 
-        for (double j = bound11; j < bound12+1; j++){
+        for (size_t j = bound11; j < bound12+1; j++){
             double crs2 = 1.0;
-            double bound21 = i-j;
-            double bound22 = std::min(i, n);
+            size_t bound21 = i-j;
+            size_t bound22 = std::min(i, n);
 
-            for (double k = bound21; k < bound22 +1; k++){
-                double crt1 = target.operands[i]->valueof() * choose(i,i-k);
+            for (size_t k = bound21; k < bound22 +1; k++){
+                double crt1 = target.operands[k]->valueof() * choose(j,i-k);
                 double crt2 = crt1 * choose(i,j);
-                double crt3 = std::pow(operands[i]->valueof(),crt2);
+                double crt3 = std::pow(operands[j]->valueof(),crt2);
 
                 double crt = crs2 * crt3;
                 crs2 = crt;

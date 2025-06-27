@@ -28,8 +28,6 @@ class CRnum : public CRobj {
         void simplify() override;
         CRnum* copy() const override;
 
-        
-        
         double initialize(); 
         double valueof() const;
         bool isnumber() const override;

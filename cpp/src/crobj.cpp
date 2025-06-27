@@ -1,9 +1,7 @@
 #include "crobj.hpp"
+#include <iostream>
 
 
-CRobj::CRobj(){ 
-    length = 0;
-}
 
 CRobj::CRobj(size_t l){
     length = l;
@@ -30,6 +28,8 @@ bool CRobj::isnumber() const{
 }
 
 double CRobj::initialize() {
+    //std::cout << "[initialize() called]\n";
+
     if (initialized) {
         return valueof();
     }
@@ -44,6 +44,12 @@ double CRobj::initialize() {
             fastvalues[i] = operands[i]->initialize();
         }
     }
+    
+    for (size_t i = 0; i < length; i++){ 
+        std::cout<< fastvalues[i] << " ";
+    }
+    std::cout<<"\n";
+
     return fastvalues[0];
 }
 

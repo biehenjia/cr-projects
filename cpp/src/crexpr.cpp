@@ -90,24 +90,27 @@ double CRexpr::valueof() const{
     switch (optype) {
         case oc::ADD:
             result = operands[0]->valueof() + operands[1]->valueof();
+            break;
         
         case oc::MUL:
             result = operands[0]->valueof() * operands[1]->valueof();
+            break;
         
         case oc::POW:
             result = std::pow(operands[0]->valueof() ,operands[1]->valueof());
-        
+            break;
         case oc::EXP:
             result = std::exp(operands[0]->valueof());
-        
+            break;
         case oc::LN:
             result = std::log(operands[0]->valueof());
-        
+            break;
         case oc::SIN:
             result = std::sin(operands[0]->valueof());
-        
+            break;
         case oc::COS:
             result = std::cos(operands[0]->valueof());
+            break;
     }
     return result; 
 }

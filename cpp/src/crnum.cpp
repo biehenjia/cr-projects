@@ -29,9 +29,6 @@ CRnum* CRnum::cos() const {
     return new CRnum(std::cos(value));
 }
 
-
-
-
 CRnum* CRnum::add(const CRnum& target) const {
     return new CRnum(this->value + target.value);
 }
