@@ -1,6 +1,22 @@
 #include "crexpr.hpp"
 
 
+CRobj* CRexpr::addto(const CRobj& target) const { 
+    return target.add(*this);
+}
+
+CRobj* CRexpr::multo(const CRobj& target) const { 
+    return target.mul(*this);
+}
+
+CRobj* CRexpr::powto(const CRobj& target) const { 
+    return target.rpow(*this);
+}
+
+CRobj* CRexpr::rpow(const CRobj& target) const { 
+    return target.pow(*this);
+}
+
 
 CRexpr::CRexpr(oc ot, const CRobj& o1) {
     optype = ot;
@@ -31,7 +47,6 @@ CRobj* CRexpr::add(const CRobj&) const {
 }
 
 CRobj* CRexpr::mul(const CRobj&) const {
-    std::cout<<"here! mul\n";
     CRobj* left = operands[0]->copy();
     CRobj* right = operands[1]->copy();
     CRexpr* result = new CRexpr(oc::MUL, *left, *right);
@@ -39,7 +54,6 @@ CRobj* CRexpr::mul(const CRobj&) const {
 }
 
 CRobj* CRexpr::pow(const CRobj&) const { 
-    std::cout<<"here! pow\n";
     CRobj* left = operands[0]->copy();
     CRobj* right = operands[1]->copy();
     CRexpr* result = new CRexpr(oc::POW, *left, *right);

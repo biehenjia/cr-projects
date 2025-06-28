@@ -1,7 +1,7 @@
 import re
 import json
 from pathlib import Path
-from .sym import *
+from sym import *
 
 
 # ll1 stuff

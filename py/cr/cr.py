@@ -3,15 +3,15 @@ import numpy
 import cProfile
 import functools, time
 
-compute = 0
+compute = [0]
 
 def timing(function):
-    @functools.wrap(function)
+    @functools.wraps(function)
     def wrapper(*args, **kwargs):
         t0 = time.perf_counter()
         res = function(*args, **kwargs)
         t1 = time.perf_counter()
-        compute += t1-t0
+        compute[0] += t1-t0
         return res
     return wrapper
 

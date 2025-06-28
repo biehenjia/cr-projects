@@ -6,6 +6,13 @@ class CRnum : public CRobj {
         CRnum(double v);
         ~CRnum() override = default;
 
+
+        CRobj* addto(const CRobj& target) const override;
+        CRobj* multo(const CRobj& target) const override;
+        CRobj* powto(const CRobj& target) const override ;
+        CRobj* rpow(const CRobj& target) const override;
+
+
         //addition crexpr, crnum, crsum case
         CRobj* add(const CRobj& target) const override;
         CRnum* add(const CRnum& target) const ;

@@ -5,7 +5,7 @@
 
 CRobj::CRobj(size_t l){
     length = l;
-    operands.resize(l,nullptr);
+    operands.resize(l);
 }
 
 //recurse
@@ -45,10 +45,10 @@ double CRobj::initialize() {
         }
     }
     
-    // for (size_t i = 0; i < length; i++){ 
-    //     std::cout<< fastvalues[i] << " ";
-    // }
-    // std::cout<<"\n";
+    for (size_t i = 0; i < length; i++){ 
+        std::cout<< fastvalues[i] << " ";
+    }
+    std::cout<<"\n";
 
     return fastvalues[0];
 }

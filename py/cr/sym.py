@@ -1,5 +1,5 @@
 from math import sin, factorial, cos, tan, exp
-from .cr import * 
+from cr import * 
 
 class Expression:
     def __init__(self, subexp = None, environment = None):
