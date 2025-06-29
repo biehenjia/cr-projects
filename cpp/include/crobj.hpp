@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 //predefine
 class CRsum ;
@@ -40,14 +41,10 @@ class CRobj {
         CRobj(size_t l);
         virtual ~CRobj();
 
-        virtual CRobj* addto(const CRobj& target) const = 0;
-        virtual CRobj* multo(const CRobj& target) const = 0;
-        virtual CRobj* powto(const CRobj& target) const = 0;
-        virtual CRobj* rpow(const CRobj& target) const = 0;
-
         virtual CRobj* add(const CRobj& target) const = 0;
         virtual CRobj* mul(const CRobj& target) const= 0;
         virtual CRobj* pow(const CRobj& target) const= 0;
+
 
         virtual CRobj* exp() const= 0;
         virtual CRobj* ln() const= 0;

@@ -58,7 +58,7 @@ CRobj* CRsum::add(const CRobj &target) const {
 }
 
 CRobj* CRsum::mul(const CRobj&target )const {
-    std::cout<<"mul called from crsum \n";
+    //std::cout<<"mul called from crsum \n";
     if (auto p = dynamic_cast<const CRnum*>(&target)) {
         auto result = new CRsum(length);
         for (size_t i = 0; i < length; i++){ 
@@ -71,8 +71,6 @@ CRobj* CRsum::mul(const CRobj&target )const {
             size_t  newlength = length + target.length -1;
             auto result = new CRsum(newlength);
             double rtemp2,r1;
-            
-            //convolve
             size_t n = length - 1;
             size_t m = target.length -1;
             for (size_t i= 0; i < newlength; i++){
@@ -89,11 +87,10 @@ CRobj* CRsum::mul(const CRobj&target )const {
                         rtemp1 *= rtemp11;
                         r2 += rtemp1;
                     }
-                    double rtemp2 = choose(i,j);
+                    double rtemp2 = choose(i, j);  
                     r2 *= rtemp2;
-                    double r = this->operands[j]->valueof();
-                    rtemp2 *= r;
-                    r1 += rtemp2;
+                    r2 *= this->operands[j]->valueof(); 
+                    r1 += r2;   
                 }
                 //std::cout<< "CALLED MUL\n";
 
@@ -112,20 +109,16 @@ CRobj* CRsum::mul(const CRobj&target )const {
 
 
 CRobj* CRsum::pow(const CRobj& target) const { 
-    std::cout<<"pow called from crsum\n";
+    //std::cout<<"pow called from crsum\n";
     if (auto p = dynamic_cast<const CRnum*>(&target)) {
         double pv = p->valueof();
-        std::cout<<"mul type\n";
+        //std::cout<<"mul type\n";
         if (pv >= 0 && std::floor(pv) == pv) {
             size_t exp = size_t(pv);
             CRobj* result = new CRnum(1.0);  
-
-
             CRobj* base = copy(); 
-
-
             while (exp > 0) {
-                std::cout << "exp = " << exp << std::endl;
+                //std::cout << "exp = " << exp << std::endl;
 
                 if (exp & 1) {
                     CRobj* tmp = result->mul(*base);
@@ -140,11 +133,16 @@ CRobj* CRsum::pow(const CRobj& target) const {
                 }
             }
             delete base;
-            std::cout<<"at the end...\n";
+            //std::cout<<"at the end...\n";
+            for (size_t i = 0; i < result->operands.size(); i++){
+                std::cout<< result->operands[i]->valueof() << " ";
+            }
+            std::cout<<"\n";
             result->simplify();
             return result;
         }
     }
+    
     return new CRexpr(oc::POW, *this->copy(), *target.copy());
 }
 

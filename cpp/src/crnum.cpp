@@ -4,7 +4,7 @@
 #include "crprod.hpp"
 
 CRnum::CRnum(double v){
-    std::cout<<"init CRnum "<<v<<"\n";
+    //std::cout<<"init CRnum "<<v<<"\n";
     value = v;
 }
 

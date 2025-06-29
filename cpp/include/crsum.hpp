@@ -7,23 +7,11 @@ class CRsum : public CRobj {
         CRsum(size_t l); 
         CRsum(double x, double h);
         
-        CRobj* addto(const CRobj& target) const override;
-        CRobj* multo(const CRobj& target) const override;
-        CRobj* powto(const CRobj& target) const override ;
-        CRobj* rpow(const CRobj& target) const override;
-
         CRobj* add(const CRobj& target) const override;
-        CRsum* add(const CRsum& target) const;
-        CRsum* add(const CRnum& target) const;
-
         CRobj* mul(const CRobj& target) const override;
-        CRsum* mul(const CRnum& target) const;
-        CRsum* mul(const CRsum& target) const;
 
         // handle negative power in the visitor
         CRobj* pow(const CRobj& target) const  override;
-        CRsum* pow(const CRnum& target) const;
-
         //covariant
         CRobj* exp() const override;
         CRobj* ln() const override;

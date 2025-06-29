@@ -7,11 +7,7 @@ class CRexpr : public CRobj {
         CRexpr(oc ot, const CRobj& o1);
         CRexpr(oc ot, const CRobj& o1, const CRobj& o2);
 
-        CRobj* addto(const CRobj& target) const override;
-        CRobj* multo(const CRobj& target) const override;
-        CRobj* powto(const CRobj& target) const override ;
-        CRobj* rpow(const CRobj& target) const override;
-        
+
         CRobj* add(const CRobj&) const override;
         CRobj* mul(const CRobj&) const override;
         CRobj* pow(const CRobj&) const override;

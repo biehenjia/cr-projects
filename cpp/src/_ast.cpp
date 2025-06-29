@@ -21,7 +21,7 @@ ASTbin::~ASTbin(){
 }
 
 CRobj* ASTbin::crmake(double x, double h){
-    std::cout<<"crmake on astbin called \n";
+    //std::cout<<"crmake on astbin called \n";
     CRobj* result;
     CRobj* crleft = left->crmake( x,  h);
     CRobj* crright = right->crmake( x,  h);
@@ -40,7 +40,7 @@ CRobj* ASTbin::crmake(double x, double h){
             result = (crleft->add((*crright->mul(*m1))));
             break;
         case bt::POW:
-            std::cout << "here! \n";
+            //std::cout << "here! \n";
             result = (crleft->pow(*crright));
             break;
     }
@@ -85,7 +85,7 @@ std::vector<double> ASTnode::creval(double q){
         result.push_back(cr->valueof());
         cr->shift();
     }
-    std::cout<<"creval called\n";
+    //std::cout<<"creval called\n";
     return result;
 }
 
