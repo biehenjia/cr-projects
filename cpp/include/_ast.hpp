@@ -16,6 +16,9 @@ class ASTnode {
         void crinit(double x, double h);
         std::vector<double> creval(double q);
         CRobj* cr;
+
+        virtual void view();
+        
 };
 
 class ASTnum : public ASTnode {
@@ -23,12 +26,14 @@ class ASTnum : public ASTnode {
         ASTnum(double v) : value(v) {};
         double value;
         CRobj* crmake(double x, double h) override;
+        void view() override;
 };
 
 class ASTvar : public ASTnode {
     public:
         ASTvar() {};
         CRobj* crmake(double x, double h) override;
+        void view() override;
 
 };  
 
@@ -43,6 +48,7 @@ class ASTbin : public ASTnode {
         ~ASTbin();
         CRobj* crmake(double x, double h) override;
         bt optype;
+        void view() override;
 };
 
 class ASTun : public ASTnode {
@@ -53,6 +59,7 @@ class ASTun : public ASTnode {
         ~ASTun();
         CRobj* crmake(double x, double h) override;
         ut optype;
+        void view() override;
 };
 
 

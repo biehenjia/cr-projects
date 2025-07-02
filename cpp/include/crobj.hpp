@@ -57,6 +57,7 @@ class CRobj {
         virtual double initialize();
         virtual double valueof() const;
         virtual bool isnumber() const;
+        
 
         virtual void shift();
     

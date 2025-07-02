@@ -13,6 +13,8 @@ CRobj* ASTvar::crmake(double x, double h){
 }
 
 ASTbin::~ASTbin(){
+    //std::cout<<"deleted binary\n";
+
     delete left;
     delete right;
     if (cr != nullptr){
@@ -67,6 +69,7 @@ CRobj* ASTun::crmake(double x, double h){
 }
 
 ASTun::~ASTun(){
+    //std::cout<<"deleted unary\n";
     delete left;
     if (cr != nullptr){
         delete cr;
@@ -76,16 +79,48 @@ ASTun::~ASTun(){
 void ASTnode::crinit(double x, double h){
     cr = crmake(x,h);
     cr->initialize();
+    //std::cout<<"initialized\n";
 }
 
 std::vector<double> ASTnode::creval(double q){
+
+
     std::vector<double> result;
     result.reserve(q);
     for (size_t i = 0; i < q; i++){ 
         result.push_back(cr->valueof());
         cr->shift();
     }
-    //std::cout<<"creval called\n";
+    std::cout<<"creval called\n";
     return result;
+}
+
+void ASTnode::view(){
+    std::cout<<"astnode\n";
+    left->view();
+    right->view();
+    
+}
+
+void ASTvar::view(){
+    std::cout<<"astvar(x)\n";
+}
+
+void ASTnum::view(){
+    std::cout<<"astnum("<< value <<")\n";
+}
+
+void ASTun::view(){ 
+    std::cout<<"astun\n";
+    left->view();
+    
+}
+
+void ASTbin::view(){
+    std::cout<<"astbin\n";
+    left->view();
+    right->view();
+    
+    
 }
 

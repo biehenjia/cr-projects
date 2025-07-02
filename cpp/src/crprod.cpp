@@ -170,3 +170,12 @@ CRprod* CRprod::copy() const{
     return result;
 }
 
+
+CRobj* CRprod::correctp(size_t nl) const{
+    auto result = copy();
+    result->operands.resize(nl);
+    for (size_t i = length; i< nl; i++){ 
+        result->operands[i] = new CRnum(1.0);
+    }
+    return result;
+}

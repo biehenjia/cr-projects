@@ -43,7 +43,13 @@ CRobj* CRsum::add(const CRobj &target) const {
             double b = (i < target.length) ? p->operands[i]->valueof() : 0.0;
             result->operands[i] = new CRnum(a + b);
         }
+        std::cout<< "add called!\n";
+        
         result->simplify();
+        for (size_t i = 0; i < result->operands.size(); i++){
+                std::cout<< result->operands[i]->valueof() << " ";
+            }
+            std::cout<<"\n";
         return result;
     } else if (auto p = dynamic_cast<const CRnum*>(&target)){
         auto result = this->copy();
@@ -96,10 +102,10 @@ CRobj* CRsum::mul(const CRobj&target )const {
                 result->operands[i] = new CRnum(r1);
             }
             result->length = newlength;
-            for (size_t i = 0; i < result->operands.size(); i++){
-                std::cout<< result->operands[i]->valueof() << " ";
-            }
-            std::cout<<"\n";
+            // for (size_t i = 0; i < result->operands.size(); i++){
+            //     std::cout<< result->operands[i]->valueof() << " ";
+            // }
+            // std::cout<<"\n";
             result->simplify();
             return result;
         } else { 
@@ -112,7 +118,7 @@ CRobj* CRsum::mul(const CRobj&target )const {
 
 
 CRobj* CRsum::pow(const CRobj& target) const { 
-    std::cout<<"pow called from crsum\n";
+    //std::cout<<"pow called from crsum\n";
     if (auto p = dynamic_cast<const CRnum*>(&target)) {
         double pv = p->valueof();
         //std::cout<<"mul type\n";
@@ -134,18 +140,18 @@ CRobj* CRsum::pow(const CRobj& target) const {
                     delete base;
                     base = tmp;
                 }
-                for (size_t i = 0; i < base->operands.size(); i++){
-                    std::cout<< base->operands[i]->valueof() << " ";
-                }
-                std::cout<<"\n";
+                // for (size_t i = 0; i < base->operands.size(); i++){
+                //     std::cout<< base->operands[i]->valueof() << " ";
+                // }
+                // std::cout<<"\n";
                 
             }
             delete base;
             //std::cout<<"at the end...\n";
-            for (size_t i = 0; i < result->operands.size(); i++){
-                std::cout<< result->operands[i]->valueof() << " ";
-            }
-            std::cout<<"\n";
+            // for (size_t i = 0; i < result->operands.size(); i++){
+            //     std::cout<< result->operands[i]->valueof() << " ";
+            // }
+            // std::cout<<"\n";
             //result->simplify();
             return result;
         }

@@ -33,9 +33,13 @@ CRobj* CRnum::pow(const CRobj& target) const {
     if (auto p= dynamic_cast<const CRnum*>(&target)){
         return new CRnum(std::pow(this->value,p->value));
     } else if (auto p = dynamic_cast<const CRsum*>(&target)){
-        return p->mul(*this);
+        auto result = new CRsum(p->length);
+        for (size_t i = 0; i< p->length; i++){ 
+            result->operands[i] = new CRnum(std::pow(this->value,p->operands[i]->valueof()));
+        }
+        return result;
     }
-    return new CRexpr(oc::MUL, *this->copy(), *target.copy());
+    return new CRexpr(oc::POW, *this->copy(), *target.copy());
 }
 
 
@@ -56,7 +60,7 @@ CRnum* CRnum::copy() const{
 }
 
 bool CRnum::isnumber() const {
-    return false;
+    return true;
 }
 
 CRnum* CRnum::exp() const { 

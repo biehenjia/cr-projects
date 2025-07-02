@@ -1,8 +1,8 @@
 import pefile
 from pathlib import Path
-pyd = next(Path("build").rglob("pycr*.pyd"), None)
+pyd = next(Path("build").rglob("pycrlib*.pyd"), None)
 if pyd is None:
-    raise FileNotFoundError("Could not find pycr*.pyd under build/")
+    raise FileNotFoundError("Could not find pycrlib*.pyd under build/")
 print("Inspecting:", pyd)
 
 pe = pefile.PE(str(pyd))
