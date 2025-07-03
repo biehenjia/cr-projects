@@ -5,14 +5,14 @@
 CRexpr::CRexpr(oc ot, const CRobj& o1) {
     optype = ot;
     length = 1; 
-    operands.resize(1);
+    operands.resize(1,nullptr);
     operands[0] = o1.copy();
 }
 
 CRexpr::CRexpr(oc ot, const CRobj& o1, const CRobj& o2) {
     optype = ot;
     length = 2;
-    operands.resize(2);
+    operands.resize(2,nullptr);
     operands[0] = o1.copy();
     operands[1] = o2.copy();
 }
@@ -31,7 +31,7 @@ CRobj* CRexpr::add(const CRobj&) const {
 }
 
 CRobj* CRexpr::mul(const CRobj&) const {
-    std::cout<<"here! mul\n";
+    //std::cout<<"here! mul\n";
     CRobj* left = operands[0]->copy();
     CRobj* right = operands[1]->copy();
     CRexpr* result = new CRexpr(oc::MUL, *left, *right);
@@ -39,7 +39,7 @@ CRobj* CRexpr::mul(const CRobj&) const {
 }
 
 CRobj* CRexpr::pow(const CRobj&) const { 
-    std::cout<<"here! pow\n";
+    //std::cout<<"here! pow\n";
     CRobj* left = operands[0]->copy();
     CRobj* right = operands[1]->copy();
     CRexpr* result = new CRexpr(oc::POW, *left, *right);

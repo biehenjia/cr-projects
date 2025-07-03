@@ -2,16 +2,22 @@
 #include <chrono>
 
 double compute(size_t q){
-    ASTnode* c1 = new ASTvar();
-    ASTnode* c2 = new ASTnum(2);
-    ASTnode* c3 = new ASTvar();
-    ASTnode* c4 = new ASTnum(3);
-    ASTnode * c5 = new ASTvar();
-    ASTnode * b1 = new ASTbin(bt::ADD, c1, c2);
-    ASTnode * b3 = new ASTbin(bt::ADD, b1, c5);
+    // ASTnode* c1 = new ASTvar();
+    // ASTnode* c2 = new ASTnum(2);
+    // ASTnode* c3 = new ASTvar();
+    // ASTnode* c4 = new ASTnum(3);
+    // ASTnode * c5 = new ASTvar();
+    // ASTnode * b1 = new ASTbin(bt::ADD, c1, c2);
+    // ASTnode * b3 = new ASTbin(bt::ADD, b1, c5);
+
+
     // ASTnode * b1 = new ASTbin(bt::POW, c1,c2);
     // ASTnode * b2 = new ASTbin(bt::POW, c3, c4);
     // ASTnode* b3 = new ASTbin(bt::ADD, b1, b2);
+
+
+    ASTnode *b1 = new ASTvar();
+    ASTnode *b3 = new ASTun(ut::SIN, b1);
     b3->crinit(0.0,1.0);
 
     auto t0 = std::chrono::high_resolution_clock::now();

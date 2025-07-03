@@ -29,6 +29,7 @@ PYBIND11_MODULE(pycrlib, m) {
         .value("SIN", ut::SIN)
         .value("EXP", ut::EXP)
         .value("LN", ut::LN)
+        .value("TAN",ut::TAN)
         .export_values();
 
     // Base AST node
@@ -38,13 +39,13 @@ PYBIND11_MODULE(pycrlib, m) {
         .def("creval", [](ASTnode &self, size_t q) {
             py::array_t<double> result(q);
             {
-                std::cout<<"Creval called\n";
+                //std::cout<<"Creval called\n";
                 double *ptr = static_cast<double*>(result.request().ptr);
                 for (size_t i = 0; i < q; ++i) {
                     ptr[i] = self.cr->valueof();
                     self.cr->shift();
                 }
-                std::cout<<"Creval Finished\n";
+                //std::cout<<"Creval Finished\n";
             }
             return result;
         }, 

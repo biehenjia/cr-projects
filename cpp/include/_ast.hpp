@@ -2,7 +2,7 @@
 #include "crobj.hpp"
 
 enum class bt {ADD, SUB, MUL, DIV, POW};
-enum class ut {NEG, FAC, EXP, LN, SIN, COS};
+enum class ut {NEG, FAC, EXP, LN, SIN, COS, TAN, COT};
 
 class ASTnode {
     public:
@@ -55,6 +55,7 @@ class ASTun : public ASTnode {
     public:
         ASTun(ut o, ASTnode* l){
             left = l;
+            optype = o;
         }
         ~ASTun();
         CRobj* crmake(double x, double h) override;

@@ -20,7 +20,7 @@ class CRtrig : public CRobj {
         void simplify() override; 
         CRobj* copy() const override;
         void shift() override;
-        double initialize();
+        // double initialize();
         double valueof() const;
 
         oc trigtype;

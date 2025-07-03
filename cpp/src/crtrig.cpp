@@ -11,7 +11,6 @@ CRtrig::CRtrig(oc t, size_t l) {
 }
 
 
-
 CRobj* CRtrig::copy() const {
     auto result = new CRtrig(trigtype, length);
     for (size_t i = 0; i < length; i++){ 
@@ -30,11 +29,6 @@ CRobj* CRtrig::pow(const CRobj& target) const{
     return new CRexpr(oc::POW, *this->copy(), *target.copy());
 }
 
-
-
-CRobj* CRtrig::pow(const CRobj& target) const{ 
-    return new CRexpr(oc::POW, *this->copy(), *target.copy());
-}
 
 CRobj* CRtrig::mul(const CRobj& target) const { 
     CRobj* result;
@@ -82,6 +76,7 @@ CRobj* CRtrig::mul(const CRobj& target) const {
         result->length = 2*L; 
 
     }
+    return result;
 }
 
 
@@ -98,4 +93,57 @@ CRobj* CRtrig::correctt(size_t nl) const {
     return result;
 }
 
+double CRtrig::valueof() const {
+    double result = 0;
+    switch (trigtype) {
+        case oc::SIN:
+            result =  fastvalues[0];
+            break;
+        case oc::COS:
+            result =  fastvalues[length/2];
+            break;
+        case oc::TAN:
+            result = fastvalues[0]/fastvalues[length/2];
+            break;
+        case oc::COT:
+            result = fastvalues[length/2]/fastvalues[0];
+            break;
+    }
+    return result;
+}
 
+
+CRobj* CRtrig::exp() const {
+    return new CRexpr(oc::EXP, *this->copy());
+}
+
+CRobj* CRtrig::ln() const {
+    return new CRexpr(oc::LN, *this->copy());
+}
+
+CRobj* CRtrig::sin() const {
+    return new CRexpr(oc::SIN, *this->copy());
+}
+
+CRobj* CRtrig::cos() const {
+    return new CRexpr(oc::COS, *this->copy());
+}
+
+//todo
+void CRtrig::simplify() {
+
+}
+
+void CRtrig::shift(){
+    double r1, r2, r3, r4, z;
+    size_t t = length/2;
+    for (size_t i = 0; i < t-1; i++){ 
+        r1 = fastvalues[i] * fastvalues[i+t+1];
+        r2 = fastvalues[i+t] * fastvalues[i+1];
+        z = r1 + r2;
+        r3 = fastvalues[i+t] * fastvalues[i+t+1];
+        r4 = fastvalues[i] * fastvalues[i+1];
+        fastvalues[i+t] = r3-r4;
+        fastvalues[i] = z;
+    }
+}

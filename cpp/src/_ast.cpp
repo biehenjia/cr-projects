@@ -52,19 +52,29 @@ CRobj* ASTbin::crmake(double x, double h){
 }
 
 CRobj* ASTun::crmake(double x, double h){
+    //std::cout<<"making AST unary \n";
     CRobj* result;
     CRobj* crleft = left->crmake( x,  h);
     switch (optype) {
         case ut::COS:
             result = crleft->cos();
+            break;
         case ut::SIN:
             result = crleft->sin(); 
+            break;
         case ut::EXP:
             result  = crleft->exp();
+            break;
         case ut:: LN:
             result = crleft->ln();
+            break;
     }
     delete crleft;
+    //std::cout<<"returned AST unary\n";
+    // for (size_t i = 0; i < result->length; i++){ 
+    //     std::cout<<result->operands[i]->valueof()<<" ";
+    // }
+    //std::cout<<"\n";
     return result;
 }
 
@@ -78,31 +88,32 @@ ASTun::~ASTun(){
 
 void ASTnode::crinit(double x, double h){
     cr = crmake(x,h);
-    std::cout<<"crmade\n";
-    for (size_t i = 0; i < cr->operands.size(); i++){
-        std::cout<< cr->operands[i]->valueof()<<" ";
-    }
-    std::cout<<"\n";
+    //std::cout<<cr->length<<"\n";
+    //std::cout<<"crmade\n";
+    // for (size_t i = 0; i < cr->operands.size(); i++){
+    //     std::cout<< cr->operands[i]->valueof()<<" ";
+    // }
+    //std::cout<<"finished \n";
     cr->initialize();
-    std::cout<<"initialized\n";
+    //std::cout<<"initialized\n";
 
 }
 
 std::vector<double> ASTnode::creval(double q){
 
-    std::cout<<"Creval called\n";
+    //std::cout<<"Creval called\n";
     std::vector<double> result;
     result.reserve(q);
     for (size_t i = 0; i < q; i++){ 
         result.push_back(cr->valueof());
         cr->shift();
     }
-    std::cout<<"creval called\n";
+    //std::cout<<"creval called\n";
     return result;
 }
 
 void ASTnode::view(){
-    std::cout<<"astnode\n";
+    //std::cout<<"astnode\n";
     left->view();
     right->view();
     

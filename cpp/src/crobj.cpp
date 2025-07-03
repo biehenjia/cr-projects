@@ -28,7 +28,7 @@ bool CRobj::isnumber() const{
 }
 
 double CRobj::initialize() {
-    std::cout << "[initialize() called]\n";
+    //std::cout << "[initialize() called]\n";
 
     if (initialized) {
         return valueof();
@@ -36,7 +36,7 @@ double CRobj::initialize() {
 
     initialized = true;
     fastvalues.resize(length,0);
-    isnumbers.resize(length);
+    isnumbers.resize(length, false);
 
     for (size_t i = 0; i < length; i++){ 
         isnumbers[i] = operands[i]->isnumber();
@@ -45,10 +45,10 @@ double CRobj::initialize() {
         }
     }
     
-    for (size_t i = 0; i < length; i++){ 
-        std::cout<< fastvalues[i] << " ";
-    }
-    std::cout<<"\n Those were the fastvalues\n";
+    // for (size_t i = 0; i < length; i++){ 
+    //     std::cout<< fastvalues[i] << " ";
+    // }
+    // std::cout<<"\n Those were the fastvalues\n";
 
     return fastvalues[0];
 }

@@ -2,7 +2,8 @@
 #include "crnum.hpp"
 #include "crexpr.hpp"
 #include "crprod.hpp"
-#include <iostream>
+#include "crtrig.hpp"
+
 
 CRsum::CRsum(size_t l){
     length = l;
@@ -43,13 +44,13 @@ CRobj* CRsum::add(const CRobj &target) const {
             double b = (i < target.length) ? p->operands[i]->valueof() : 0.0;
             result->operands[i] = new CRnum(a + b);
         }
-        std::cout<< "add called!\n";
+        //std::cout<< "add called!\n";
         
         result->simplify();
-        for (size_t i = 0; i < result->operands.size(); i++){
-                std::cout<< result->operands[i]->valueof() << " ";
-            }
-            std::cout<<"\n";
+        // for (size_t i = 0; i < result->operands.size(); i++){
+        //         std::cout<< result->operands[i]->valueof() << " ";
+        //     }
+        //     std::cout<<"\n";
         return result;
     } else if (auto p = dynamic_cast<const CRnum*>(&target)){
         auto result = this->copy();
@@ -100,6 +101,7 @@ CRobj* CRsum::mul(const CRobj&target )const {
                 //std::cout<< "CALLED MUL\n";
 
                 result->operands[i] = new CRnum(r1);
+                
             }
             result->length = newlength;
             // for (size_t i = 0; i < result->operands.size(); i++){
@@ -191,9 +193,19 @@ CRobj* CRsum::ln() const {
 }
 
 CRobj* CRsum::sin() const { 
-    return new CRexpr(oc::SIN, *this->copy());
+    auto result = new CRtrig(oc::SIN, length* 2);
+    for (size_t i = 0; i < length; i++){ 
+        result->operands[i] = new CRnum(std::sin(operands[i]->valueof()));
+        result->operands[i+length] = new CRnum(std::cos(operands[i]->valueof()));
+    }
+    return result;
 }
 
 CRobj* CRsum::cos() const { 
-    return new CRexpr(oc::COS, *this->copy());
+    auto result = new CRtrig(oc::COS, length* 2);
+    for (size_t i = 0; i < length; i++){ 
+        result->operands[i] = new CRnum(std::sin(operands[i]->valueof()));
+        result->operands[i+length] = new CRnum(std::cos(operands[i]->valueof()));
+    }
+    return result;
 }

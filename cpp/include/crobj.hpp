@@ -31,7 +31,9 @@ enum class oc {
     EXP,
     LN,
     SIN,
-    COS
+    COS,
+    TAN, 
+    COT
 };
 
 
