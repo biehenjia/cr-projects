@@ -2,14 +2,21 @@
 #include "crsum.hpp"
 #include "crnum.hpp"
 
+/*
+in python, we construct the AST, and each symbolic node (variable) is initialized with
+the proper start and step and index. Then, we call crinit that passes the number of evaluations 
+needed for each one
+
+*/
+
 CRnum* m1 = new CRnum(-1);
 
-CRobj* ASTnum::crmake(double x, double h){
-    return new CRnum(value);
+CRobj* ASTvar::crmake(){
+    return new CRsum(index, start, step);
 }
 
-CRobj* ASTvar::crmake(double x, double h){
-    return new CRsum(x, h);
+CRobj* ASTnum::crmake(){
+    return new CRnum(value);
 }
 
 ASTbin::~ASTbin(){
@@ -22,11 +29,11 @@ ASTbin::~ASTbin(){
     }
 }
 
-CRobj* ASTbin::crmake(double x, double h){
+CRobj* ASTbin::crmake(){
     //std::cout<<"crmake on astbin called \n";
     CRobj* result;
-    CRobj* crleft = left->crmake( x,  h);
-    CRobj* crright = right->crmake( x,  h);
+    CRobj* crleft = left->crmake();
+    CRobj* crright = right->crmake();
     switch (optype) {
         case bt::ADD:
             result = crleft->add(*crright);
@@ -51,10 +58,10 @@ CRobj* ASTbin::crmake(double x, double h){
     return result;
 }
 
-CRobj* ASTun::crmake(double x, double h){
+CRobj* ASTun::crmake(){
     //std::cout<<"making AST unary \n";
     CRobj* result;
-    CRobj* crleft = left->crmake( x,  h);
+    CRobj* crleft = left->crmake();
     switch (optype) {
         case ut::COS:
             result = crleft->cos();
@@ -86,31 +93,34 @@ ASTun::~ASTun(){
     }
 }
 
-void ASTnode::crinit(double x, double h){
-    cr = crmake(x,h);
-    //std::cout<<cr->length<<"\n";
-    //std::cout<<"crmade\n";
-    // for (size_t i = 0; i < cr->operands.size(); i++){
-    //     std::cout<< cr->operands[i]->valueof()<<" ";
-    // }
-    //std::cout<<"finished \n";
+void ASTnode::crinit(std::vector<size_t> p){
+    cr = crmake();
     cr->initialize();
-    //std::cout<<"initialized\n";
-
+    params = p;
 }
 
-std::vector<double> ASTnode::creval(double q){
-
-    //std::cout<<"Creval called\n";
-    std::vector<double> result;
-    result.reserve(q);
-    for (size_t i = 0; i < q; i++){ 
-        result.push_back(cr->valueof());
-        cr->shift();
+// potentially can use CRtable? 
+// maybe optimization?
+void ASTnode::_creval(const CRobj& c, size_t i){
+    if (i >= params.size()){
+        return;
+    } else { 
+        // expensive
+        auto cc = c.copy();
+        auto val = 0;
+        for (size_t j = 0; j < params[i]; j++){
+            result.push_back(cc->valueof());
+            _creval(*cc, i+1);
+            cc->shift(i);
+        }
     }
-    //std::cout<<"creval called\n";
+}
+
+std::vector<double> ASTnode::creval(){
+    _creval(*cr,0);
     return result;
 }
+
 
 void ASTnode::view(){
     //std::cout<<"astnode\n";
@@ -137,7 +147,4 @@ void ASTbin::view(){
     std::cout<<"astbin\n";
     left->view();
     right->view();
-    
-    
 }
-

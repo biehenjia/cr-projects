@@ -6,14 +6,9 @@ class CRnum : public CRobj {
         CRnum(double v);
         ~CRnum() override = default;
 
-        //addition crexpr, crnum, crsum case
         CRobj* add(const CRobj& target) const override;
-
-        
         CRobj* mul(const CRobj& target)  const override;
-
         CRobj* pow(const CRobj& target) const  override;
-
 
         CRnum* exp() const override;
         CRnum* ln() const override;
@@ -27,7 +22,7 @@ class CRnum : public CRobj {
         double valueof() const;
         bool isnumber() const override;
     
-        void shift() override;
+        void shift(size_t index) override;
         double value;
 
 };

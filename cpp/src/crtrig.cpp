@@ -4,20 +4,30 @@
 #include "crnum.hpp"
 #include "crprod.hpp"
 
-CRtrig::CRtrig(oc t, size_t l) {
+CRtrig::CRtrig(size_t i, oc t, size_t l) {
     length = l;
     trigtype = t;
     operands.resize(length,nullptr);
+    index = i;
 }
 
-
 CRobj* CRtrig::copy() const {
-    auto result = new CRtrig(trigtype, length);
+    auto result = new CRtrig(index, trigtype, length);
     for (size_t i = 0; i < length; i++){ 
         result->operands[i] = operands[i]->copy();
     }
 
-    // ignore initialized logic for now
+    if (initialized){
+        result->initialized = true;
+        result->fastvalues.resize(length);
+        result->isnumbers.resize(length);
+        for (size_t i = 0; i < length; i++){ 
+            result->fastvalues[i] = fastvalues[i];
+            result->isnumbers[i] = isnumbers[i];
+        }
+    }
+
+    
     return result;
 }
 
@@ -29,22 +39,27 @@ CRobj* CRtrig::pow(const CRobj& target) const{
     return new CRexpr(oc::POW, *this->copy(), *target.copy());
 }
 
-
 CRobj* CRtrig::mul(const CRobj& target) const { 
-    CRobj* result;
-    if (auto p = dynamic_cast<const CRnum*>(&target)){
+    if (index != target.index) { 
         if (trigtype == oc::SIN || trigtype == oc::COS){
             auto result = copy(); 
             delete result->operands[0];
-            result->operands[0] = new CRnum(p->valueof() * operands[0]->valueof());
+            if (operands[0]->index > target.index){ 
+                result->operands[0] = operands[0]->mul(target);
+            } else { 
+                result->operands[0] = target.mul(*operands[0]);
+            }
             delete result->operands[length/2];
-            result->operands[length/2] = new CRnum(p->valueof() * operands[length/2]->valueof());
-        } else { 
-            return new CRexpr(oc::MUL, *this->copy(), *target.copy());
+            if (operands[length/2]->index > target.index){ 
+                result->operands[length/2]= operands[length/2]->mul(target);
+            } else { 
+                result->operands[length/2] = target.mul(*operands[0]);
+            }
+            result->simplify();
+            return result;
         }
-        
     } else if (auto p = dynamic_cast<const CRprod*> (&target)){ 
-        auto result = new CRtrig(trigtype,length);
+        auto result = new CRtrig(index, trigtype,length);
         size_t L;
         std::vector<CRobj> o1, o2;
         CRobj* c = nullptr;
@@ -68,17 +83,36 @@ CRobj* CRtrig::mul(const CRobj& target) const {
         }
         result->operands.resize(L*2);
         for (size_t i = 0; i < L; i++){
-            result->operands[i] = o1[i].mul(o2[i]);
-            result->operands[i+L] = o1[i+L].mul(o2[i]);
+            if (o1[i].index > o2[i].index) {
+                result->operands[i] = o1[i].mul(o2[i]);
+            } else { 
+                result->operands[i+L] = o1[i+L].mul(o2[i]);
+            }  
         }
         if (c) delete c;
         if (t) delete t;
         result->length = 2*L; 
 
+        result->simplify();
+        return result;
+    } else { 
+        return new CRexpr(oc::MUL,*this->copy(), *target.copy());
+
+    }
+}
+
+CRobj* CRtrig::correctt(size_t nl) const { 
+    auto result = copy();
+    result->operands.resize(nl * 2);
+    for (size_t i = 0; i < length/2; i++){
+        result->operands[i] = operands[i+length/2]->copy();
+    }
+    for (size_t i = length/2; i < nl*2; i++){
+        result->operands[i] = new CRnum(0.0);
+        result->operands[i+nl] = new CRnum(1.0);
     }
     return result;
 }
-
 
 CRobj* CRtrig::correctt(size_t nl) const { 
     auto result = copy();
@@ -112,7 +146,6 @@ double CRtrig::valueof() const {
     return result;
 }
 
-
 CRobj* CRtrig::exp() const {
     return new CRexpr(oc::EXP, *this->copy());
 }
@@ -134,16 +167,26 @@ void CRtrig::simplify() {
 
 }
 
-void CRtrig::shift(){
-    double r1, r2, r3, r4, z;
-    size_t t = length/2;
-    for (size_t i = 0; i < t-1; i++){ 
-        r1 = fastvalues[i] * fastvalues[i+t+1];
-        r2 = fastvalues[i+t] * fastvalues[i+1];
-        z = r1 + r2;
-        r3 = fastvalues[i+t] * fastvalues[i+t+1];
-        r4 = fastvalues[i] * fastvalues[i+1];
-        fastvalues[i+t] = r3-r4;
-        fastvalues[i] = z;
+void CRtrig::shift(size_t i){
+    if (index != i){ 
+        for (size_t i = 0; i < length; i++){ 
+            if (isnumbers[i]){ 
+                operands[i]->shift(i);
+                fastvalues[i] = operands[i]->valueof();
+            }
+        }
+    } else { 
+        double r1, r2, r3, r4, z;
+        size_t t = length/2;
+        for (size_t i = 0; i < t-1; i++){ 
+            r1 = fastvalues[i] * fastvalues[i+t+1];
+            r2 = fastvalues[i+t] * fastvalues[i+1];
+            z = r1 + r2;
+            r3 = fastvalues[i+t] * fastvalues[i+t+1];
+            r4 = fastvalues[i] * fastvalues[i+1];
+            fastvalues[i+t] = r3-r4;
+            fastvalues[i] = z;
+        }
     }
+    
 }

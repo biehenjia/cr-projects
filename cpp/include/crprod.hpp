@@ -3,11 +3,12 @@
 
 class CRprod :public CRobj {
     public: 
-        CRprod(size_t l);
+        CRprod(size_t i, size_t l);
         
         CRobj* add(const CRobj& target) const override;
         CRobj* mul(const CRobj& target) const override;
         CRobj* pow(const CRobj& target) const override;
+
         //todo;
         CRobj* exp() const override;
         CRobj* ln() const override;
@@ -16,10 +17,9 @@ class CRprod :public CRobj {
         CRobj* cos() const override;
 
         void simplify() override;
-        void shift() override;
+        void shift(size_t index) override;
 
         CRprod* copy() const override;
         CRobj* correctp(size_t nl) const;
-        
-
 };
+

@@ -3,26 +3,31 @@
 #include "crnum.hpp"
 #include "crsum.hpp"
 
-CRprod::CRprod(size_t l){
+CRprod::CRprod(size_t i, size_t l){
     length = l;
     operands.resize(l,nullptr);
+    index = i; 
 }
 
 CRobj* CRprod::add(const CRobj& target) const {
     return new CRexpr(oc::ADD, *this->copy(), *target.copy());
 }
 
-CRobj* CRprod::mul(const CRobj& target) const {
-    if (auto p = dynamic_cast<const CRnum*>(&target) ){
-        auto result = this->copy();
-        auto temp = new CRnum(result->operands[0]->valueof() * target.valueof());
-        delete result->operands[0];
-        result->operands[0] = temp;
+CRobj* CRprod::mul(const CRobj& target) const { 
+    if (index != target.index) {
+        auto result = copy();
+        CRobj* temp = nullptr;
+        if (operands[0]->index > target.index) { 
+            temp = operands[0]->mul(target);
+        } else {
+            temp = operands[0]->mul(target);
+        } delete result->operands[0];
+        result->operands[0] = temp; 
         result->simplify();
         return result;
-    } else if (auto p = dynamic_cast<const  CRprod*> (&target)){
+    } else if (auto p = dynamic_cast<const CRprod*>(&target)) {
         size_t newlength = std::max(length, p->length);
-        auto result = new CRprod(newlength);
+        auto result = new CRprod(index, newlength);
         for (size_t i = 0; i < newlength; ++i) {
             double a = (i < length) ? this->operands[i]->valueof() : 1.0;
             double b = (i < target.length) ? p->operands[i]->valueof() : 1.0;
@@ -30,22 +35,25 @@ CRobj* CRprod::mul(const CRobj& target) const {
         }
         result->simplify();
         return result;
+    } else { 
+        return new CRexpr(oc::MUL, *this->copy(), *target.copy());
     }
-    return new CRexpr(oc::MUL, *this->copy(), *target.copy());
-}
+} 
 
 CRobj* CRprod::pow(const CRobj& target) const { 
-    if (auto p = dynamic_cast<const CRnum*>(&target) ){
-        auto result = this->copy();
-        auto temp = new CRnum(result->operands[0]->valueof() * target.valueof());
-        delete result->operands[0];
-        result->operands[0] = temp;
-        result->simplify();
-        return result;
+    
+    if (index != target.index) {
+        auto result = copy();
+        CRobj* temp = nullptr;
+        for (size_t i = 0; i < length; i ++){
+            temp = operands[i]->pow(target);
+            delete result->operands[i];
+            result->operands[i] = temp;
+        }
     } else if (auto p = dynamic_cast<const  CRsum*> (&target)){
         size_t newlength = length + p->length -1;
         size_t n,m;
-        auto result = new CRprod(newlength);
+        auto result = new CRprod(index, newlength);
         if (length > p->length){ 
             m = length;
             n = p->length;
@@ -79,8 +87,10 @@ CRobj* CRprod::pow(const CRobj& target) const {
         }
         result->simplify();
         return result;
+    } else { 
+        return new CRexpr(oc::POW, *this->copy(), *target.copy());
+
     }
-    return new CRexpr(oc::POW, *this->copy(), *target.copy());
 }
 
 void CRprod::simplify() {
@@ -121,9 +131,18 @@ void CRprod::simplify() {
     }
 }
 
-void CRprod::shift() { 
-    for (size_t i = 0; i < length-1; i++){
-        fastvalues[i] *= fastvalues[i+1 ];
+void CRprod::shift(size_t i) { 
+    if (index > i){
+        for (size_t i = 0; i < length; i++){ 
+            if (isnumbers[i]){ 
+                operands[i]->shift(i);
+                fastvalues[i] = operands[i]->valueof();
+            }
+        }
+    } else { 
+        for (size_t i = 0; i < length-1; i++){
+            fastvalues[i] *= fastvalues[i+1 ];
+        }
     }
 }
 
@@ -132,15 +151,14 @@ CRobj* CRprod::exp() const {
 }
 
 CRobj* CRprod::ln() const { 
-    auto result = new CRsum(length);
+    auto result = new CRsum(index, length);
 
     for (size_t i = 0; i < length; i++){ 
-        auto temp = new CRnum(std::log(operands[i]->valueof()));
+        auto temp = operands[i]->ln();
         result->operands[i] = temp;
     }
     result->simplify();
     return result;
-
 }
 
 CRobj* CRprod::sin() const { 
@@ -152,12 +170,13 @@ CRobj* CRprod::cos() const {
 }
 
 CRprod* CRprod::copy() const{
-    auto result = new CRprod(length);
+    auto result = new CRprod(index, length);
     for (size_t i = 0; i < length; i++ ){ 
         result->operands[i] = operands[i]->copy(); 
     }
 
     if (initialized){
+        result->initialized = true;
         result->fastvalues.resize(length);
         result->isnumbers.resize(length);
         for (size_t i = 0; i < length; i++){ 
@@ -169,7 +188,6 @@ CRprod* CRprod::copy() const{
     
     return result;
 }
-
 
 CRobj* CRprod::correctp(size_t nl) const{
     auto result = copy();

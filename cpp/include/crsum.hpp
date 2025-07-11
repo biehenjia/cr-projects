@@ -4,14 +4,15 @@
 
 class CRsum : public CRobj {
     public: 
-        CRsum(size_t l); 
-        CRsum(double x, double h);
+        CRsum(size_t i, size_t l); 
+        CRsum(size_t i, double x, double h);
         
         CRobj* add(const CRobj& target) const override;
         CRobj* mul(const CRobj& target) const override;
 
         // handle negative power in the visitor
         CRobj* pow(const CRobj& target) const  override;
+
         //covariant
         CRobj* exp() const override;
         CRobj* ln() const override;
@@ -21,6 +22,6 @@ class CRsum : public CRobj {
 
         void simplify() override;
         CRsum* copy() const override;
-        void shift() override;
+        void shift(size_t index) override;
 
 };

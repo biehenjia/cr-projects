@@ -5,24 +5,25 @@
 #include "crtrig.hpp"
 
 
-CRsum::CRsum(size_t l){
+CRsum:: CRsum(size_t i, size_t l){
+    index = i;
     length = l;
-    operands.resize(length,nullptr);
+    operands.resize(length, nullptr); 
 }
 
-CRsum::CRsum(double x, double h){ 
-    length = 2;
+CRsum::CRsum(size_t i, double x, double h){ 
+    length = 2; 
+    index =i;
     operands = {new CRnum(x), new CRnum(h)};
 }
 
-
-CRsum* CRsum::copy() const{
-    auto result = new CRsum(length);
+CRsum* CRsum::copy() const { 
+    auto result = new CRsum(index, length);
     for (size_t i = 0; i < length; i++ ){ 
         result->operands[i] = operands[i]->copy(); 
     }
-
     if (initialized){
+        result->initialized = true;
         result->fastvalues.resize(length);
         result->isnumbers.resize(length);
         for (size_t i = 0; i < length; i++){ 
@@ -30,52 +31,63 @@ CRsum* CRsum::copy() const{
             result->isnumbers[i] = isnumbers[i];
         }
     }
-
-
     return result;
 }
 
-CRobj* CRsum::add(const CRobj &target) const { 
-    if (auto p = dynamic_cast<const CRsum*>(&target)){
+// always assume invariant 
+CRobj* CRsum::add(const CRobj& target) const { 
+
+    
+
+    if (target.index != index){
+        auto result = copy();
+        CRobj* temp = nullptr;
+        if (operands[0]->index > target.index) {
+            auto temp = operands[0]->add(target);
+        } else { 
+            auto temp = operands[0]->add(target);
+        }
+        delete result->operands[0];
+        result->operands[0] = temp;
+        result->simplify();
+        return result;
+    } else if (auto p = dynamic_cast<const CRsum*>(&target)) {
         size_t maxLen = std::max(length, p->length);
-        auto result = new CRsum(maxLen);
+        auto result = new CRsum(index, maxLen);
         for (size_t i = 0; i < maxLen; ++i) {
             double a = (i < length) ? this->operands[i]->valueof(): 0.0;
             double b = (i < target.length) ? p->operands[i]->valueof() : 0.0;
             result->operands[i] = new CRnum(a + b);
         }
-        //std::cout<< "add called!\n";
-        
-        result->simplify();
-        // for (size_t i = 0; i < result->operands.size(); i++){
-        //         std::cout<< result->operands[i]->valueof() << " ";
-        //     }
-        //     std::cout<<"\n";
-        return result;
-    } else if (auto p = dynamic_cast<const CRnum*>(&target)){
-        auto result = this->copy();
-        auto temp = new CRnum(result->operands[0]->valueof() + target.valueof());
-        delete result->operands[0];
-        result->operands[0] = temp;
         result->simplify();
         return result;
-    } 
-    return new CRexpr(oc::ADD, *this->copy(), *target.copy());
+    } else { 
+        return new CRexpr(oc::ADD, *this->copy(), *target.copy());
+    }
 }
 
-CRobj* CRsum::mul(const CRobj&target )const {
-    //std::cout<<"mul called from crsum \n";
-    if (auto p = dynamic_cast<const CRnum*>(&target)) {
-        auto result = new CRsum(length);
-        for (size_t i = 0; i < length; i++){ 
-            result->operands[i] = new CRnum(operands[i]->valueof() * target.valueof());
+CRobj* CRsum::mul(const CRobj& target) const { 
+
+    
+    if (target.index != index){
+        auto result = copy();
+        CRobj* temp = nullptr;
+        for (size_t i = 0; i< length; i++){
+            if (operands[0]->index > target.index) {
+                temp = operands[0]->mul(target);
+            } else { 
+                temp = operands[0]->mul(target);
+            }
+            delete result->operands[0];
+            result->operands[0] = temp;
         }
-        result->simplify(); 
+        result->simplify();
         return result;
-    } else if (auto p = dynamic_cast<const CRsum*> (&target)){
+    } else if (auto p = dynamic_cast<const CRsum*>(&target)) {
+
         if (length >= target.length){
             size_t  newlength = length + target.length -1;
-            auto result = new CRsum(newlength);
+            auto result = new CRsum(index, newlength);
             double rtemp2,r1;
             size_t n = length - 1;
             size_t m = target.length -1;
@@ -98,39 +110,31 @@ CRobj* CRsum::mul(const CRobj&target )const {
                     r2 *= this->operands[j]->valueof(); 
                     r1 += r2;   
                 }
-                //std::cout<< "CALLED MUL\n";
-
                 result->operands[i] = new CRnum(r1);
                 
             }
             result->length = newlength;
-            // for (size_t i = 0; i < result->operands.size(); i++){
-            //     std::cout<< result->operands[i]->valueof() << " ";
-            // }
-            // std::cout<<"\n";
             result->simplify();
             return result;
+
         } else { 
             return target.mul(*this);
         }
+    } else { 
+        return new CRexpr(oc::MUL, *this->copy(), *target.copy());
     }
-    return new CRexpr(oc::MUL, *this->copy(), *target.copy());
-
 }
 
-
 CRobj* CRsum::pow(const CRobj& target) const { 
-    //std::cout<<"pow called from crsum\n";
+    
     if (auto p = dynamic_cast<const CRnum*>(&target)) {
+        auto result = copy();
         double pv = p->valueof();
-        //std::cout<<"mul type\n";
         if (pv >= 0 && std::floor(pv) == pv) {
             size_t exp = size_t(pv);
             CRobj* result = new CRnum(1.0); 
             CRobj* base = copy(); 
             while (exp > 0) {
-                //std::cout << "exp = " << exp << std::endl;
-
                 if (exp & 1) {
                     CRobj* tmp = result->mul(*base);
                     delete result;
@@ -141,46 +145,18 @@ CRobj* CRsum::pow(const CRobj& target) const {
                     CRobj* tmp = base->mul(*base);
                     delete base;
                     base = tmp;
-                }
-                // for (size_t i = 0; i < base->operands.size(); i++){
-                //     std::cout<< base->operands[i]->valueof() << " ";
-                // }
-                // std::cout<<"\n";
-                
+                }  
             }
             delete base;
-            //std::cout<<"at the end...\n";
-            // for (size_t i = 0; i < result->operands.size(); i++){
-            //     std::cout<< result->operands[i]->valueof() << " ";
-            // }
-            // std::cout<<"\n";
-            //result->simplify();
             return result;
         }
-    }
-    
-    return new CRexpr(oc::POW, *this->copy(), *target.copy());
-}
-
-
-void CRsum::simplify() {
-    size_t j = length - 1;
-    while (j > 0 && operands[j]->valueof() == 0){
-        delete operands[j];
-        j--;
-    }
-
-    operands.resize(j+1);
-}
-
-void CRsum::shift() {
-    for (size_t i = 0; i < length-1; i++){
-        fastvalues[i] += fastvalues[i+1];
+    } else {
+        return new CRexpr(oc::POW, *this->copy(), *target.copy());
     }
 }
 
 CRobj* CRsum::exp() const {
-    auto result = new CRprod(length);
+    auto result = new CRprod(index, length);
     for (size_t i = 0; i< length; i++){ 
         result->operands[i] = new CRnum(std::exp(operands[i]->valueof()));
     }
@@ -193,7 +169,7 @@ CRobj* CRsum::ln() const {
 }
 
 CRobj* CRsum::sin() const { 
-    auto result = new CRtrig(oc::SIN, length* 2);
+    auto result = new CRtrig(index, oc::SIN, length* 2);
     for (size_t i = 0; i < length; i++){ 
         result->operands[i] = new CRnum(std::sin(operands[i]->valueof()));
         result->operands[i+length] = new CRnum(std::cos(operands[i]->valueof()));
@@ -202,10 +178,35 @@ CRobj* CRsum::sin() const {
 }
 
 CRobj* CRsum::cos() const { 
-    auto result = new CRtrig(oc::COS, length* 2);
+    auto result = new CRtrig(index, oc::COS, length* 2);
     for (size_t i = 0; i < length; i++){ 
         result->operands[i] = new CRnum(std::sin(operands[i]->valueof()));
         result->operands[i+length] = new CRnum(std::cos(operands[i]->valueof()));
     }
     return result;
 }
+
+void CRsum::shift(size_t i ) {
+    if (index > i){
+        for (size_t i = 0; i < length; i++){ 
+            if (isnumbers[i]){ 
+                operands[i]->shift(i);
+                fastvalues[i] = operands[i]->valueof();
+            }
+        }
+    } else {
+        for (size_t i = 0; i < length-1; i++){
+            fastvalues[i] += fastvalues[i+1];
+        }
+    }
+}
+
+void CRsum::simplify() {
+    size_t j = length - 1;
+    while (j > 0 && operands[j]->valueof() == 0){
+        delete operands[j];
+        j--;
+    }
+    operands.resize(j+1);
+}
+

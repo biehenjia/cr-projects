@@ -4,26 +4,28 @@
 #include <cmath>
 #include <iostream>
 
-//predefine
-class CRsum ;
+class CRsum;
 class CRnum;
-class CRprod ;
-class CRtrig ;
-class CRexpr ;
+class CRprod;
+class CRtrig;
+class CRexpr;
 
-//nCk
-inline double choose(double n,double k){
+inline double choose (double n, double k){ 
     double result = 1;
-    for (size_t i = 1; i <= k; i++){
+    for (size_t i = 1; i <= k; i++){ 
         result *= (n-k+i)/i;
     }
     return result;
 }
 
+inline size_t fact(size_t n){ 
+    size_t result =1; 
+    for (size_t i = 1; i<= n; i++){
+        result *= i; 
+    }
+    return result;
+}
 
-// n!
-
-// operation code
 enum class oc {
     ADD,
     MUL,
@@ -36,11 +38,10 @@ enum class oc {
     COT
 };
 
-
 class CRobj {
     public:
-        CRobj(){};
-        CRobj(size_t l);
+        CRobj(){}; 
+        CRobj(size_t i){};
         virtual ~CRobj();
 
         virtual CRobj* add(const CRobj& target) const = 0;
@@ -61,7 +62,7 @@ class CRobj {
         virtual bool isnumber() const;
         
 
-        virtual void shift();
+        virtual void shift(size_t index);
     
         std::vector<CRobj*> operands;
 
@@ -69,5 +70,7 @@ class CRobj {
         std::vector<bool> isnumbers;
         size_t length;
         bool initialized = false;
+
+        size_t index;
     
 };

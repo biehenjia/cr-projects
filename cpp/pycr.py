@@ -3,7 +3,8 @@ import json
 from pathlib import Path
 import pycrlib
 
-
+# input a list of parameters
+a = [("x,0,1,100"),("")]
 
 # ll1 stuff
 # TODO : Still need to learn more about parse table in general
@@ -14,6 +15,7 @@ with open(p) as f:
 terminals = set()
 for x,y in ll1.items():
     terminals.update(y.keys())
+
 terminals.add('EOF')
 
 lex = {

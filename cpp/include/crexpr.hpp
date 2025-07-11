@@ -3,8 +3,9 @@
 
 class CRexpr : public CRobj {
     public:
-        CRexpr(oc ot, size_t l);
-        CRexpr(oc ot, const CRobj& o1);
+
+        CRexpr(oc ot, size_t length);
+        CRexpr( oc ot, const CRobj& o1);
         CRexpr(oc ot, const CRobj& o1, const CRobj& o2);
 
 
@@ -20,7 +21,7 @@ class CRexpr : public CRobj {
         CRobj* copy() const override;
 
         double valueof() const override;
-        void shift() override;
+        void shift(size_t index) override;
 
         oc optype;
 

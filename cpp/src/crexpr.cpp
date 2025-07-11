@@ -1,11 +1,10 @@
 #include "crexpr.hpp"
 
-
-
 CRexpr::CRexpr(oc ot, const CRobj& o1) {
     optype = ot;
     length = 1; 
     operands.resize(1,nullptr);
+    index = o1.index;
     operands[0] = o1.copy();
 }
 
@@ -13,6 +12,7 @@ CRexpr::CRexpr(oc ot, const CRobj& o1, const CRobj& o2) {
     optype = ot;
     length = 2;
     operands.resize(2,nullptr);
+    index = o1.index > o2.index ? o1.index : o2.index;
     operands[0] = o1.copy();
     operands[1] = o2.copy();
 }
@@ -20,7 +20,7 @@ CRexpr::CRexpr(oc ot, const CRobj& o1, const CRobj& o2) {
 CRexpr::CRexpr(oc ot, size_t l){
     optype = ot;
     length = l;
-    operands.resize(length);
+    operands.resize(l,nullptr);
 }
 
 CRobj* CRexpr::add(const CRobj&) const {
@@ -31,7 +31,6 @@ CRobj* CRexpr::add(const CRobj&) const {
 }
 
 CRobj* CRexpr::mul(const CRobj&) const {
-    //std::cout<<"here! mul\n";
     CRobj* left = operands[0]->copy();
     CRobj* right = operands[1]->copy();
     CRexpr* result = new CRexpr(oc::MUL, *left, *right);
@@ -39,7 +38,6 @@ CRobj* CRexpr::mul(const CRobj&) const {
 }
 
 CRobj* CRexpr::pow(const CRobj&) const { 
-    //std::cout<<"here! pow\n";
     CRobj* left = operands[0]->copy();
     CRobj* right = operands[1]->copy();
     CRexpr* result = new CRexpr(oc::POW, *left, *right);
@@ -72,6 +70,7 @@ CRobj* CRexpr::cos() const {
 
 CRobj* CRexpr::copy() const{
     auto result = new CRexpr(optype, length);
+    result->index = index;
     for (size_t i = 0; i < length; i++){ 
         result->operands[i] = operands[i]->copy(); 
     }
@@ -87,7 +86,6 @@ CRobj* CRexpr::copy() const{
     }
     return result;
 }
-
 
 double CRexpr::valueof() const{
     double result = 0;
@@ -119,10 +117,10 @@ double CRexpr::valueof() const{
     return result; 
 }
 
-void CRexpr::shift() {
+void CRexpr::shift(size_t i) {
     for (size_t i = 0; i < length; i++){
         if (!isnumbers[i]){
-            operands[i]->shift();
+            operands[i]->shift(i);
             fastvalues[i] = operands[i]->valueof();
         }
     }

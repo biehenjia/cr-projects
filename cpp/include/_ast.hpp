@@ -1,5 +1,5 @@
-#pragma once 
 #include "crobj.hpp"
+#pragma once 
 
 enum class bt {ADD, SUB, MUL, DIV, POW};
 enum class ut {NEG, FAC, EXP, LN, SIN, COS, TAN, COT};
@@ -9,14 +9,19 @@ class ASTnode {
         //default
         ASTnode() {};
         virtual ~ASTnode() = default;
-        virtual CRobj* crmake(double x, double h) = 0;
+        virtual CRobj* crmake() = 0;
         ASTnode* left;
         ASTnode* right;
         // exposed
-        void crinit(double x, double h);
-        std::vector<double> creval(double q);
-        CRobj* cr;
+        void crinit(std::vector<size_t>);
 
+        std::vector<double> result;
+        std::vector<size_t> params;
+
+        void _creval(const CRobj& c, size_t i);
+        std::vector<double> creval();
+
+        CRobj* cr;
         virtual void view();
         
 };
@@ -25,15 +30,18 @@ class ASTnum : public ASTnode {
     public:
         ASTnum(double v) : value(v) {};
         double value;
-        CRobj* crmake(double x, double h) override;
+        CRobj* crmake() override;
         void view() override;
 };
 
 class ASTvar : public ASTnode {
     public:
-        ASTvar() {};
-        CRobj* crmake(double x, double h) override;
+        ASTvar(size_t i, double x, double h) : index(i), start(x), step(h) {};
+        CRobj* crmake() override;
         void view() override;
+        size_t index;
+        double start;
+        double step;
 
 };  
 
@@ -46,7 +54,7 @@ class ASTbin : public ASTnode {
             optype = o;
         };
         ~ASTbin();
-        CRobj* crmake(double x, double h) override;
+        CRobj* crmake() override;
         bt optype;
         void view() override;
 };
@@ -58,10 +66,12 @@ class ASTun : public ASTnode {
             optype = o;
         }
         ~ASTun();
-        CRobj* crmake(double x, double h) override;
+        CRobj* crmake() override;
         ut optype;
         void view() override;
 };
+
+
 
 
 

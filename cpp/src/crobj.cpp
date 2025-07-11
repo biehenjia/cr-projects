@@ -1,20 +1,16 @@
 #include "crobj.hpp"
 #include <iostream>
 
-
-
 CRobj::CRobj(size_t l){
     length = l;
     operands.resize(l,nullptr);
 }
 
-//recurse
 CRobj::~CRobj(){
     for (CRobj* p : operands){
         delete p;
     }
 }
-
 
 double CRobj::valueof() const{
     if (initialized){ 
@@ -28,7 +24,6 @@ bool CRobj::isnumber() const{
 }
 
 double CRobj::initialize() {
-    //std::cout << "[initialize() called]\n";
 
     if (initialized) {
         return valueof();
@@ -44,16 +39,9 @@ double CRobj::initialize() {
             fastvalues[i] = operands[i]->initialize();
         }
     }
-    
-    // for (size_t i = 0; i < length; i++){ 
-    //     std::cout<< fastvalues[i] << " ";
-    // }
-    // std::cout<<"\n Those were the fastvalues\n";
 
     return fastvalues[0];
 }
-
-
 
 void CRobj::simplify(){
     for (size_t i = 0; i < length; i++){ 
@@ -61,8 +49,7 @@ void CRobj::simplify(){
     }
 }
 
-
-void CRobj::shift() {
+void CRobj::shift(size_t index) {
     return;
 }
 

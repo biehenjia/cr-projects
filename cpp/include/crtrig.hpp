@@ -1,11 +1,9 @@
 #pragma once 
 #include "crobj.hpp"
 
-
-
 class CRtrig : public CRobj { 
     public:
-        CRtrig(oc t, size_t l);
+        CRtrig(size_t i, oc t, size_t l);
 
         CRobj* add(const CRobj& target) const override;
         CRobj* mul(const CRobj& target) const override;
@@ -19,10 +17,12 @@ class CRtrig : public CRobj {
 
         void simplify() override; 
         CRobj* copy() const override;
-        void shift() override;
+        void shift(size_t index) override;
         // double initialize();
         double valueof() const;
 
         oc trigtype;
         CRobj* correctt(size_t nl) const;
+
+        size_t index;
 };

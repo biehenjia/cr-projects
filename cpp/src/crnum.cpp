@@ -4,36 +4,27 @@
 #include "crprod.hpp"
 
 CRnum::CRnum(double v){
-    //std::cout<<"init CRnum "<<v<<"\n";
     value = v;
+    index = -1;
 }
 
-CRobj* CRnum::add(const CRobj& target) const  { 
-
-    if (auto p = dynamic_cast<const CRnum*>(&target)){
-        return new CRnum(this->value + p->value);
-    } else if (auto p = dynamic_cast<const CRsum*>(&target)){
-        return p->add(*this);
-    } 
-    return new CRexpr(oc::ADD, *this->copy(), *target.copy());
-    
+// assume invariant
+CRobj* CRnum::add(const CRobj& target) const  {
+    auto p = dynamic_cast<const CRnum*>(&target);
+    return new CRnum(this->value + p->value);
 }
 
 CRobj* CRnum::mul(const CRobj& target) const { 
-    if (auto p= dynamic_cast<const CRnum*>(&target)){
-        return new CRnum(this->value * p->value);
-    } else if (auto p = dynamic_cast<const CRsum*>(&target)){
-        return p->mul(*this);
-    } 
-    return new CRexpr(oc::MUL, *this->copy(), *target.copy());
-    
+    auto p = dynamic_cast<const CRnum*>(&target);
+    return new CRnum(this->value * p->value);
 }
 
+// noncommutative
 CRobj* CRnum::pow(const CRobj& target) const {
     if (auto p= dynamic_cast<const CRnum*>(&target)){
         return new CRnum(std::pow(this->value,p->value));
     } else if (auto p = dynamic_cast<const CRsum*>(&target)){
-        auto result = new CRsum(p->length);
+        auto result = new CRsum(p->index, p->length);
         for (size_t i = 0; i< p->length; i++){ 
             result->operands[i] = new CRnum(std::pow(this->value,p->operands[i]->valueof()));
         }
@@ -41,7 +32,6 @@ CRobj* CRnum::pow(const CRobj& target) const {
     }
     return new CRexpr(oc::POW, *this->copy(), *target.copy());
 }
-
 
 CRnum* CRnum::ln() const { 
     return new CRnum(std::log(value));
@@ -75,11 +65,10 @@ double CRnum::valueof() const {
     return value; 
 }
 
-
 void CRnum::simplify() {
     return;
 }
 
-void CRnum::shift(){
+void CRnum::shift(size_t index){
     return;
 }
