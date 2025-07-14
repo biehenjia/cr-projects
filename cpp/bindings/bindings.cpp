@@ -2,12 +2,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 
-#include "_ast.hpp"
 #include "crobj.hpp"
-#include "crnum.hpp"
-#include "crsum.hpp"
-#include "crprod.hpp"
-#include "crexpr.hpp"
+#include "_ast.hpp"
 
 namespace py = pybind11;
 
@@ -16,39 +12,37 @@ PYBIND11_MODULE(pycrlib, m) {
 
     py::enum_<bt>(m, "bt")
         .value("ADD", bt::ADD)
+        .value("SUB", bt::SUB)
         .value("MUL", bt::MUL)
         .value("DIV", bt::DIV)
-        .value("SUB", bt::SUB)
         .value("POW", bt::POW)
         .export_values();
 
     py::enum_<ut>(m, "ut")
-        .value("COS", ut::COS)
-        .value("SIN", ut::SIN)
-        .value("EXP", ut::EXP)
-        .value("LN", ut::LN)
-        .value("TAN",ut::TAN)
+        .value("NEG",  ut::NEG)
+        .value("FAC",  ut::FAC)
+        .value("EXP",  ut::EXP)
+        .value("LN",   ut::LN)
+        .value("SIN",  ut::SIN)
+        .value("COS",  ut::COS)
+        .value("TAN",  ut::TAN)
+        .value("COT",  ut::COT)
         .export_values();
 
-    py::class_<ASTnode>(m, "ASTnode")
-        .def("crinit", &ASTnode::crinit, py::arg("p"))
-        .def("creval", [](ASTnode &self, size_t q) {}, py::arg("q"))
-        .def("view",&ASTnode::view);
+    py::class_<ASTnode, std::unique_ptr<ASTnode>>(m, "ASTnode")
+        .def("crinit", &ASTnode::crinit, py::arg("params"))
+        .def("creval", &ASTnode::creval)
+        .def("view",   &ASTnode::view);
 
-    py::class_<ASTnum, ASTnode>(m, "ASTnum")
-        .def(py::init<double>(), py::arg("value"));
+    py::class_<ASTnum, ASTnode, std::unique_ptr<ASTnum>>(m, "ASTnum")
+    .def(py::init<double>(), py::arg("value"));
 
-    py::class_<ASTvar, ASTnode>(m, "ASTvar")
-        .def(py::init<size_t, double, double>(), py::arg("index"), py::arg("start"), py::arg("step"));
+    py::class_<ASTvar, ASTnode, std::unique_ptr<ASTvar>>(m, "ASTvar")
+    .def(py::init<size_t, double, double>(),py::arg("index"), py::arg("start"), py::arg("step"));
 
-    py::class_<ASTbin, ASTnode>(m, "ASTbin", py::dynamic_attr() )
-        .def(py::init<bt, ASTnode*, ASTnode*>() , py::arg("op"), py::arg("left"), py::arg("right"),
-        py::keep_alive<1, 2>(),
-        py::keep_alive<1, 3>()
-    );
+    py::class_<ASTbin, ASTnode, std::unique_ptr<ASTbin>>(m, "ASTbin", py::dynamic_attr())
+    .def(py::init<bt, std::unique_ptr<ASTnode>, std::unique_ptr<ASTnode>>(),py::arg("op"), py::arg("left"), py::arg("right"));
 
-    py::class_<ASTun, ASTnode>(m, "ASTun",py::dynamic_attr() )
-        .def(py::init<ut, ASTnode*>(), py::arg("op"), py::arg("child"),
-        py::keep_alive<1, 2>()
-    );
+    py::class_<ASTun, ASTnode, std::unique_ptr<ASTun>>(m, "ASTun", py::dynamic_attr())
+    .def(py::init<ut, std::unique_ptr<ASTnode>>(),py::arg("op"), py::arg("child"));
 }

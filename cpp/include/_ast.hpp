@@ -22,8 +22,7 @@ class ASTnode {
         std::vector<double> creval();
 
         std::unique_ptr<CRobj> cr;
-        virtual void view();
-        
+        virtual void view(); 
 };
 
 class ASTnum : public ASTnode {
@@ -42,15 +41,13 @@ class ASTvar : public ASTnode {
         size_t index;
         double start;
         double step;
-
-};  
-
+};
 
 class ASTbin : public ASTnode { 
     public:
-        ASTbin(bt o, const ASTnode& l, const ASTnode& r) {
-            left = l;
-            right = r;
+        ASTbin(bt o, std::unique_ptr<ASTnode> l,  std::unique_ptr<ASTnode> r) {
+            left = std::move(l); 
+            right = std::move(r);
             optype = o;
         };
         std::unique_ptr<CRobj> crmake() override;
@@ -60,17 +57,12 @@ class ASTbin : public ASTnode {
 
 class ASTun : public ASTnode {
     public:
-        ASTun(ut o, const ASTnode& l){
-            left = std::unique_ptr<ASTnode>(l);
+        ASTun(ut o, std::unique_ptr<ASTnode> l){
+            left = std::move(l); 
             optype = o;
         }
-        ~ASTun();
         std::unique_ptr<CRobj> crmake() override;
         ut optype;
         void view() override;
 };
-
-
-
-
 

@@ -62,9 +62,8 @@ std::unique_ptr<CRobj> CRsum::add(const CRobj& target) const {
     }
 }
 
-std::unique_ptr<CRobj> CRsum::mul(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRsum::mul(const CRobj& target) const {
 
-    
     if (target.index != index){
         auto result = copy();
         std::unique_ptr<CRobj> temp = nullptr;

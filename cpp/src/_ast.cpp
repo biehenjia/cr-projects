@@ -6,34 +6,25 @@
 in python, we construct the AST, and each symbolic node (variable) is initialized with
 the proper start and step and index. Then, we call crinit that passes the number of evaluations 
 needed for each one
-
 */
 
-CRnum* m1 = new CRnum(-1);
 
-CRobj* ASTvar::crmake(){
-    return new CRsum(index, start, step);
+
+std::unique_ptr<CRobj> m1 = std::make_unique< CRnum>(-1);
+
+std::unique_ptr<CRobj> ASTvar::crmake(){
+    return std::make_unique< CRsum>(index, start, step);
 }
 
-CRobj* ASTnum::crmake(){
-    return new CRnum(value);
+std::unique_ptr<CRobj> ASTnum::crmake(){
+    return std::make_unique< CRnum>(value);
 }
 
-ASTbin::~ASTbin(){
-    //std::cout<<"deleted binary\n";
-
-    delete left;
-    delete right;
-    if (cr != nullptr){
-        delete cr;
-    }
-}
-
-CRobj* ASTbin::crmake(){
+std::unique_ptr<CRobj> ASTbin::crmake(){
     //std::cout<<"crmake on astbin called \n";
-    CRobj* result;
-    CRobj* crleft = left->crmake();
-    CRobj* crright = right->crmake();
+    std::unique_ptr<CRobj> result;
+    auto crleft = left->crmake();
+    auto  crright = right->crmake();
     switch (optype) {
         case bt::ADD:
             result = crleft->add(*crright);
@@ -53,15 +44,13 @@ CRobj* ASTbin::crmake(){
             result = (crleft->pow(*crright));
             break;
     }
-    delete crleft;
-    delete crright;
     return result;
 }
 
-CRobj* ASTun::crmake(){
+std::unique_ptr<CRobj> ASTun::crmake(){
     //std::cout<<"making AST unary \n";
-    CRobj* result;
-    CRobj* crleft = left->crmake();
+    std::unique_ptr<CRobj> result;
+    auto crleft = left->crmake();
     switch (optype) {
         case ut::COS:
             result = crleft->cos();
@@ -76,21 +65,7 @@ CRobj* ASTun::crmake(){
             result = crleft->ln();
             break;
     }
-    delete crleft;
-    //std::cout<<"returned AST unary\n";
-    // for (size_t i = 0; i < result->length; i++){ 
-    //     std::cout<<result->operands[i]->valueof()<<" ";
-    // }
-    //std::cout<<"\n";
     return result;
-}
-
-ASTun::~ASTun(){
-    //std::cout<<"deleted unary\n";
-    delete left;
-    if (cr != nullptr){
-        delete cr;
-    }
 }
 
 void ASTnode::crinit(std::vector<size_t> p){
