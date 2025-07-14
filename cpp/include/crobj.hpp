@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <memory>
 
 class CRsum;
 class CRnum;
@@ -42,20 +43,20 @@ class CRobj {
     public:
         CRobj(){}; 
         CRobj(size_t i){};
-        virtual ~CRobj();
+        virtual ~CRobj() =default ;
 
-        virtual CRobj* add(const CRobj& target) const = 0;
-        virtual CRobj* mul(const CRobj& target) const= 0;
-        virtual CRobj* pow(const CRobj& target) const= 0;
+        virtual std::unique_ptr<CRobj> add(const CRobj& target) const = 0;
+        virtual std::unique_ptr<CRobj> mul(const CRobj& target) const= 0;
+        virtual std::unique_ptr<CRobj> pow(const CRobj& target) const= 0;
 
 
-        virtual CRobj* exp() const= 0;
-        virtual CRobj* ln() const= 0;
-        virtual CRobj* sin()  const= 0;
-        virtual CRobj* cos() const = 0;
+        virtual std::unique_ptr<CRobj> exp() const= 0;
+        virtual std::unique_ptr<CRobj> ln() const= 0;
+        virtual std::unique_ptr<CRobj> sin()  const= 0;
+        virtual std::unique_ptr<CRobj> cos() const = 0;
 
         virtual void simplify();
-        virtual CRobj* copy() const = 0;
+        virtual std::unique_ptr<CRobj> copy() const = 0;
 
         virtual double initialize();
         virtual double valueof() const;
@@ -64,7 +65,7 @@ class CRobj {
 
         virtual void shift(size_t index);
     
-        std::vector<CRobj*> operands;
+        std::vector<std::unique_ptr<CRobj>> operands;
 
         std::vector<double> fastvalues;
         std::vector<bool> isnumbers;

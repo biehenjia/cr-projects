@@ -23,53 +23,53 @@ CRexpr::CRexpr(oc ot, size_t l){
     operands.resize(l,nullptr);
 }
 
-CRobj* CRexpr::add(const CRobj&) const {
-    CRobj* left = operands[0]->copy();
-    CRobj* right = operands[1]->copy();
-    CRexpr* result = new CRexpr(oc::ADD, *left, *right);
+std::unique_ptr<CRobj> CRexpr::add(const CRobj&) const {
+    auto left = operands[0]->copy();
+    auto right = operands[1]->copy();
+    auto result = std::make_unique< CRexpr>(oc::ADD, *left, *right);
     return result;
 }
 
-CRobj* CRexpr::mul(const CRobj&) const {
-    CRobj* left = operands[0]->copy();
-    CRobj* right = operands[1]->copy();
-    CRexpr* result = new CRexpr(oc::MUL, *left, *right);
+std::unique_ptr<CRobj> CRexpr::mul(const CRobj&) const {
+    auto left = operands[0]->copy();
+    auto right = operands[1]->copy();
+    auto result = std::make_unique< CRexpr>(oc::MUL, *left, *right);
     return result;
 }
 
-CRobj* CRexpr::pow(const CRobj&) const { 
-    CRobj* left = operands[0]->copy();
-    CRobj* right = operands[1]->copy();
-    CRexpr* result = new CRexpr(oc::POW, *left, *right);
+std::unique_ptr<CRobj> CRexpr::pow(const CRobj&) const { 
+    auto left = operands[0]->copy();
+    auto right = operands[1]->copy();
+    auto result = std::make_unique< CRexpr>(oc::POW, *left, *right);
     return result;
 }
 
-CRobj* CRexpr::exp() const {
-    CRobj* left = operands[0]->copy();
-    CRexpr* result = new CRexpr(oc::EXP, *left);
+std::unique_ptr<CRobj> CRexpr::exp() const {
+    auto left = operands[0]->copy();
+    auto result = std::make_unique< CRexpr>(oc::EXP, *left);
     return result;
 }
 
-CRobj* CRexpr::ln() const { 
-    CRobj* left = operands[0]->copy();
-    CRexpr* result = new CRexpr(oc::LN, *left);
+std::unique_ptr<CRobj> CRexpr::ln() const { 
+    auto left = operands[0]->copy();
+    auto result = std::make_unique< CRexpr>(oc::LN, *left);
     return result;
 }
 
-CRobj* CRexpr::sin() const { 
-    CRobj* left = operands[0]->copy();
-    CRexpr* result = new CRexpr(oc::SIN, *left);
+std::unique_ptr<CRobj> CRexpr::sin() const { 
+    auto left = operands[0]->copy();
+    auto result = std::make_unique< CRexpr>(oc::SIN, *left);
     return result;
 }
 
-CRobj* CRexpr::cos() const {
-    CRobj* left = operands[0]->copy();
-    CRexpr* result = new CRexpr(oc::COS, *left);
+std::unique_ptr<CRobj> CRexpr::cos() const {
+    auto left = operands[0]->copy();
+    auto result = std::make_unique< CRexpr>(oc::COS, *left);
     return result;
 }
 
-CRobj* CRexpr::copy() const{
-    auto result = new CRexpr(optype, length);
+std::unique_ptr<CRobj> CRexpr::copy() const{
+    auto result = std::make_unique< CRexpr>(optype, length);
     result->index = index;
     for (size_t i = 0; i < length; i++){ 
         result->operands[i] = operands[i]->copy(); 

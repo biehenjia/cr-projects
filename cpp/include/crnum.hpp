@@ -4,19 +4,17 @@
 class CRnum : public CRobj {
     public:
         CRnum(double v);
-        ~CRnum() override = default;
+        std::unique_ptr<CRobj> add(const CRobj& target) const override;
+        std::unique_ptr<CRobj> mul(const CRobj& target)  const override;
+        std::unique_ptr<CRobj> pow(const CRobj& target) const  override;
 
-        CRobj* add(const CRobj& target) const override;
-        CRobj* mul(const CRobj& target)  const override;
-        CRobj* pow(const CRobj& target) const  override;
-
-        CRnum* exp() const override;
-        CRnum* ln() const override;
-        CRnum* sin()  const override;
-        CRnum* cos() const override;
+        std::unique_ptr<CRobj> exp() const override;
+        std::unique_ptr<CRobj> ln() const override;
+        std::unique_ptr<CRobj> sin()  const override;
+        std::unique_ptr<CRobj> cos() const override;
 
         void simplify() override;
-        CRnum* copy() const override;
+        std::unique_ptr<CRobj> copy() const override;
 
         double initialize(); 
         double valueof() const;

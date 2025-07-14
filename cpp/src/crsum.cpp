@@ -17,8 +17,8 @@ CRsum::CRsum(size_t i, double x, double h){
     operands = {new CRnum(x), new CRnum(h)};
 }
 
-CRsum* CRsum::copy() const { 
-    auto result = new CRsum(index, length);
+std::unique_ptr<CRobj> CRsum::copy() const { 
+    auto result = std::make_unique< CRsum>(index, length);
     for (size_t i = 0; i < length; i++ ){ 
         result->operands[i] = operands[i]->copy(); 
     }
@@ -35,51 +35,46 @@ CRsum* CRsum::copy() const {
 }
 
 // always assume invariant 
-CRobj* CRsum::add(const CRobj& target) const { 
-
-    
-
+std::unique_ptr<CRobj> CRsum::add(const CRobj& target) const { 
     if (target.index != index){
         auto result = copy();
-        CRobj* temp = nullptr;
+        std::unique_ptr<CRobj> temp = nullptr;
         if (operands[0]->index > target.index) {
             auto temp = operands[0]->add(target);
         } else { 
             auto temp = operands[0]->add(target);
         }
-        delete result->operands[0];
-        result->operands[0] = temp;
+        result->operands[0] = std::move(temp);
         result->simplify();
         return result;
     } else if (auto p = dynamic_cast<const CRsum*>(&target)) {
         size_t maxLen = std::max(length, p->length);
-        auto result = new CRsum(index, maxLen);
+        auto result = std::make_unique< CRsum>(index, maxLen);
         for (size_t i = 0; i < maxLen; ++i) {
             double a = (i < length) ? this->operands[i]->valueof(): 0.0;
             double b = (i < target.length) ? p->operands[i]->valueof() : 0.0;
-            result->operands[i] = new CRnum(a + b);
+            result->operands[i] = std::make_unique< CRnum>(a + b);
         }
         result->simplify();
         return result;
     } else { 
-        return new CRexpr(oc::ADD, *this->copy(), *target.copy());
+        return std::make_unique< CRexpr>(oc::ADD, *this->copy(), *target.copy());
     }
 }
 
-CRobj* CRsum::mul(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRsum::mul(const CRobj& target) const { 
 
     
     if (target.index != index){
         auto result = copy();
-        CRobj* temp = nullptr;
+        std::unique_ptr<CRobj> temp = nullptr;
         for (size_t i = 0; i< length; i++){
             if (operands[0]->index > target.index) {
                 temp = operands[0]->mul(target);
             } else { 
                 temp = operands[0]->mul(target);
             }
-            delete result->operands[0];
-            result->operands[0] = temp;
+            result->operands[0] = std::move(temp);
         }
         result->simplify();
         return result;
@@ -87,7 +82,7 @@ CRobj* CRsum::mul(const CRobj& target) const {
 
         if (length >= target.length){
             size_t  newlength = length + target.length -1;
-            auto result = new CRsum(index, newlength);
+            auto result = std::make_unique< CRsum>(index, newlength);
             double rtemp2,r1;
             size_t n = length - 1;
             size_t m = target.length -1;
@@ -110,7 +105,7 @@ CRobj* CRsum::mul(const CRobj& target) const {
                     r2 *= this->operands[j]->valueof(); 
                     r1 += r2;   
                 }
-                result->operands[i] = new CRnum(r1);
+                result->operands[i] = std::make_unique< CRnum>(r1);
                 
             }
             result->length = newlength;
@@ -121,67 +116,62 @@ CRobj* CRsum::mul(const CRobj& target) const {
             return target.mul(*this);
         }
     } else { 
-        return new CRexpr(oc::MUL, *this->copy(), *target.copy());
+        return std::make_unique< CRexpr>(oc::MUL, *this->copy(), *target.copy());
     }
 }
 
-CRobj* CRsum::pow(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRsum::pow(const CRobj& target) const { 
     
     if (auto p = dynamic_cast<const CRnum*>(&target)) {
         auto result = copy();
         double pv = p->valueof();
         if (pv >= 0 && std::floor(pv) == pv) {
             size_t exp = size_t(pv);
-            CRobj* result = new CRnum(1.0); 
-            CRobj* base = copy(); 
+            std::unique_ptr<CRobj> result = std::make_unique< CRnum>(1.0); 
+            std::unique_ptr<CRobj> base = copy(); 
             while (exp > 0) {
                 if (exp & 1) {
-                    CRobj* tmp = result->mul(*base);
-                    delete result;
-                    result = tmp;
+                    result = std::move(result->mul(*base));
                 }
                 exp >>= 1;
                 if (exp) {
-                    CRobj* tmp = base->mul(*base);
-                    delete base;
-                    base = tmp;
+                    base = std::move(base->mul(*base));
                 }  
             }
-            delete base;
             return result;
         }
     } else {
-        return new CRexpr(oc::POW, *this->copy(), *target.copy());
+        return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
     }
 }
 
-CRobj* CRsum::exp() const {
-    auto result = new CRprod(index, length);
+std::unique_ptr<CRobj> CRsum::exp() const {
+    auto result = std::make_unique< CRprod>(index, length);
     for (size_t i = 0; i< length; i++){ 
-        result->operands[i] = new CRnum(std::exp(operands[i]->valueof()));
+        result->operands[i] = std::make_unique< CRnum>(std::exp(operands[i]->valueof()));
     }
     result->simplify();
     return result;
 }
 
-CRobj* CRsum::ln() const {
-    return new CRexpr(oc::LN, *this->copy());
+std::unique_ptr<CRobj> CRsum::ln() const {
+    return std::make_unique< CRexpr>(oc::LN, *this->copy());
 }
 
-CRobj* CRsum::sin() const { 
-    auto result = new CRtrig(index, oc::SIN, length* 2);
+std::unique_ptr<CRobj> CRsum::sin() const { 
+    auto result = std::make_unique< CRtrig>(index, oc::SIN, length* 2);
     for (size_t i = 0; i < length; i++){ 
-        result->operands[i] = new CRnum(std::sin(operands[i]->valueof()));
-        result->operands[i+length] = new CRnum(std::cos(operands[i]->valueof()));
+        result->operands[i] = std::make_unique< CRnum>(std::sin(operands[i]->valueof()));
+        result->operands[i+length] = std::make_unique< CRnum>(std::cos(operands[i]->valueof()));
     }
     return result;
 }
 
-CRobj* CRsum::cos() const { 
-    auto result = new CRtrig(index, oc::COS, length* 2);
+std::unique_ptr<CRobj> CRsum::cos() const { 
+    auto result = std::make_unique< CRtrig>(index, oc::COS, length* 2);
     for (size_t i = 0; i < length; i++){ 
-        result->operands[i] = new CRnum(std::sin(operands[i]->valueof()));
-        result->operands[i+length] = new CRnum(std::cos(operands[i]->valueof()));
+        result->operands[i] = std::make_unique< CRnum>(std::sin(operands[i]->valueof()));
+        result->operands[i+length] = std::make_unique< CRnum>(std::cos(operands[i]->valueof()));
     }
     return result;
 }
@@ -204,7 +194,6 @@ void CRsum::shift(size_t i ) {
 void CRsum::simplify() {
     size_t j = length - 1;
     while (j > 0 && operands[j]->valueof() == 0){
-        delete operands[j];
         j--;
     }
     operands.resize(j+1);

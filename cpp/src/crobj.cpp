@@ -6,12 +6,6 @@ CRobj::CRobj(size_t l){
     operands.resize(l,nullptr);
 }
 
-CRobj::~CRobj(){
-    for (CRobj* p : operands){
-        delete p;
-    }
-}
-
 double CRobj::valueof() const{
     if (initialized){ 
         return fastvalues[0];

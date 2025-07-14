@@ -7,21 +7,21 @@ class CRsum : public CRobj {
         CRsum(size_t i, size_t l); 
         CRsum(size_t i, double x, double h);
         
-        CRobj* add(const CRobj& target) const override;
-        CRobj* mul(const CRobj& target) const override;
+        std::unique_ptr<CRobj> add(const CRobj& target) const override;
+        std::unique_ptr<CRobj> mul(const CRobj& target) const override;
 
         // handle negative power in the visitor
-        CRobj* pow(const CRobj& target) const  override;
+        std::unique_ptr<CRobj> pow(const CRobj& target) const  override;
 
         //covariant
-        CRobj* exp() const override;
-        CRobj* ln() const override;
+        std::unique_ptr<CRobj> exp() const override;
+        std::unique_ptr<CRobj> ln() const override;
 
-        CRobj* sin() const override;
-        CRobj* cos() const override;
+        std::unique_ptr<CRobj> sin() const override;
+        std::unique_ptr<CRobj> cos() const override;
 
         void simplify() override;
-        CRsum* copy() const override;
+        std::unique_ptr<CRobj> copy() const override;
         void shift(size_t index) override;
 
 };

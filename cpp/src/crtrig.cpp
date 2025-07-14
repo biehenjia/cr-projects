@@ -11,8 +11,8 @@ CRtrig::CRtrig(size_t i, oc t, size_t l) {
     index = i;
 }
 
-CRobj* CRtrig::copy() const {
-    auto result = new CRtrig(index, trigtype, length);
+std::unique_ptr< CRobj>CRtrig::copy() const {
+    auto result = std::make_unique< CRtrig>(index, trigtype, length);
     for (size_t i = 0; i < length; i++){ 
         result->operands[i] = operands[i]->copy();
     }
@@ -26,30 +26,27 @@ CRobj* CRtrig::copy() const {
             result->isnumbers[i] = isnumbers[i];
         }
     }
-
-    
     return result;
 }
 
-CRobj* CRtrig::add(const CRobj& target) const { 
-    return new CRexpr(oc::ADD, *this->copy(), *target.copy() );
+std::unique_ptr<CRobj> CRtrig::add(const CRobj& target) const { 
+    return std::make_unique< CRexpr>(oc::ADD, *this->copy(), *target.copy() );
 }
 
-CRobj* CRtrig::pow(const CRobj& target) const{ 
-    return new CRexpr(oc::POW, *this->copy(), *target.copy());
+std::unique_ptr<CRobj> CRtrig::pow(const CRobj& target) const{ 
+    return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
 }
 
-CRobj* CRtrig::mul(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRtrig::mul(const CRobj& target) const { 
     if (index != target.index) { 
         if (trigtype == oc::SIN || trigtype == oc::COS){
             auto result = copy(); 
-            delete result->operands[0];
+
             if (operands[0]->index > target.index){ 
                 result->operands[0] = operands[0]->mul(target);
             } else { 
                 result->operands[0] = target.mul(*operands[0]);
             }
-            delete result->operands[length/2];
             if (operands[length/2]->index > target.index){ 
                 result->operands[length/2]= operands[length/2]->mul(target);
             } else { 
@@ -59,11 +56,11 @@ CRobj* CRtrig::mul(const CRobj& target) const {
             return result;
         }
     } else if (auto p = dynamic_cast<const CRprod*> (&target)){ 
-        auto result = new CRtrig(index, trigtype,length);
+        auto result = std::make_unique< CRtrig>(index, trigtype,length);
         size_t L;
         std::vector<CRobj> o1, o2;
-        CRobj* c = nullptr;
-        CRobj* t = nullptr;
+        std::unique_ptr<CRobj> c = nullptr;
+        std::unique_ptr<CRobj> t = nullptr;
         if (length/2 > p->length){
             auto o1 = operands;
             c = p->correctp(length/2);
@@ -89,40 +86,37 @@ CRobj* CRtrig::mul(const CRobj& target) const {
                 result->operands[i+L] = o1[i+L].mul(o2[i]);
             }  
         }
-        if (c) delete c;
-        if (t) delete t;
         result->length = 2*L; 
-
         result->simplify();
         return result;
     } else { 
-        return new CRexpr(oc::MUL,*this->copy(), *target.copy());
+        return std::make_unique< CRexpr>(oc::MUL,*this->copy(), *target.copy());
 
     }
 }
 
-CRobj* CRtrig::correctt(size_t nl) const { 
+std::unique_ptr<CRobj> CRtrig::correctt(size_t nl) const { 
     auto result = copy();
     result->operands.resize(nl * 2);
     for (size_t i = 0; i < length/2; i++){
         result->operands[i] = operands[i+length/2]->copy();
     }
     for (size_t i = length/2; i < nl*2; i++){
-        result->operands[i] = new CRnum(0.0);
-        result->operands[i+nl] = new CRnum(1.0);
+        result->operands[i] = std::make_unique< CRnum>(0.0);
+        result->operands[i+nl] = std::make_unique< CRnum>(1.0);
     }
     return result;
 }
 
-CRobj* CRtrig::correctt(size_t nl) const { 
+std::unique_ptr<CRobj> CRtrig::correctt(size_t nl) const { 
     auto result = copy();
     result->operands.resize(nl * 2);
     for (size_t i = 0; i < length/2; i++){
         result->operands[i] = operands[i+length/2]->copy();
     }
     for (size_t i = length/2; i < nl*2; i++){
-        result->operands[i] = new CRnum(0.0);
-        result->operands[i+nl] = new CRnum(1.0);
+        result->operands[i] = std::make_unique< CRnum>(0.0);
+        result->operands[i+nl] = std::make_unique< CRnum>(1.0);
     }
     return result;
 }
@@ -146,20 +140,20 @@ double CRtrig::valueof() const {
     return result;
 }
 
-CRobj* CRtrig::exp() const {
-    return new CRexpr(oc::EXP, *this->copy());
+std::unique_ptr<CRobj> CRtrig::exp() const {
+    return std::make_unique< CRexpr>(oc::EXP, *this->copy());
 }
 
-CRobj* CRtrig::ln() const {
-    return new CRexpr(oc::LN, *this->copy());
+std::unique_ptr<CRobj> CRtrig::ln() const {
+    return std::make_unique< CRexpr>(oc::LN, *this->copy());
 }
 
-CRobj* CRtrig::sin() const {
-    return new CRexpr(oc::SIN, *this->copy());
+std::unique_ptr<CRobj> CRtrig::sin() const {
+    return std::make_unique< CRexpr>(oc::SIN, *this->copy());
 }
 
-CRobj* CRtrig::cos() const {
-    return new CRexpr(oc::COS, *this->copy());
+std::unique_ptr<CRobj> CRtrig::cos() const {
+    return std::make_unique< CRexpr>(oc::COS, *this->copy());
 }
 
 //todo

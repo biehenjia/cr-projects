@@ -9,16 +9,16 @@ class CRexpr : public CRobj {
         CRexpr(oc ot, const CRobj& o1, const CRobj& o2);
 
 
-        CRobj* add(const CRobj&) const override;
-        CRobj* mul(const CRobj&) const override;
-        CRobj* pow(const CRobj&) const override;
+        std::unique_ptr<CRobj> add(const CRobj&) const override;
+        std::unique_ptr<CRobj> mul(const CRobj&) const override;
+        std::unique_ptr<CRobj> pow(const CRobj&) const override;
 
-        CRobj* exp() const override;
-        CRobj* ln() const override;
-        CRobj* sin() const override; 
-        CRobj* cos() const override;
+        std::unique_ptr<CRobj> exp() const override;
+        std::unique_ptr<CRobj> ln() const override;
+        std::unique_ptr<CRobj> sin() const override; 
+        std::unique_ptr<CRobj> cos() const override;
 
-        CRobj* copy() const override;
+        std::unique_ptr<CRobj> copy() const override;
 
         double valueof() const override;
         void shift(size_t index) override;

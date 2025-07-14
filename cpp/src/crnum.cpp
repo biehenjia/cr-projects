@@ -9,52 +9,52 @@ CRnum::CRnum(double v){
 }
 
 // assume invariant
-CRobj* CRnum::add(const CRobj& target) const  {
+std::unique_ptr<CRobj> CRnum::add(const CRobj& target) const  {
     auto p = dynamic_cast<const CRnum*>(&target);
-    return new CRnum(this->value + p->value);
+    return std::make_unique< CRnum>(this->value + p->value);
 }
 
-CRobj* CRnum::mul(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRnum::mul(const CRobj& target) const { 
     auto p = dynamic_cast<const CRnum*>(&target);
-    return new CRnum(this->value * p->value);
+    return std::make_unique< CRnum>(this->value * p->value);
 }
 
 // noncommutative
-CRobj* CRnum::pow(const CRobj& target) const {
+std::unique_ptr<CRobj> CRnum::pow(const CRobj& target) const {
     if (auto p= dynamic_cast<const CRnum*>(&target)){
-        return new CRnum(std::pow(this->value,p->value));
+        return std::make_unique< CRnum>(std::pow(this->value,p->value));
     } else if (auto p = dynamic_cast<const CRsum*>(&target)){
-        auto result = new CRsum(p->index, p->length);
+        auto result = std::make_unique< CRsum>(p->index, p->length);
         for (size_t i = 0; i< p->length; i++){ 
-            result->operands[i] = new CRnum(std::pow(this->value,p->operands[i]->valueof()));
+            result->operands[i] = std::make_unique< CRnum>(std::pow(this->value,p->operands[i]->valueof()));
         }
         return result;
     }
-    return new CRexpr(oc::POW, *this->copy(), *target.copy());
+    return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
 }
 
-CRnum* CRnum::ln() const { 
-    return new CRnum(std::log(value));
+std::unique_ptr<CRobj> CRnum::ln() const { 
+    return std::make_unique< CRnum>(std::log(value));
 }
 
-CRnum* CRnum::sin() const { 
-    return new CRnum(std::sin(value));
+std::unique_ptr<CRobj> CRnum::sin() const { 
+    return std::make_unique< CRnum>(std::sin(value));
 }
 
-CRnum* CRnum::cos() const { 
-    return new CRnum(std::cos(value));
+std::unique_ptr<CRobj> CRnum::cos() const { 
+    return std::make_unique< CRnum>(std::cos(value));
 }
 
-CRnum* CRnum::copy() const{
-    return new CRnum(this->value);
+std::unique_ptr<CRobj> CRnum::copy() const{
+    return std::make_unique< CRnum>(this->value);
 }
 
 bool CRnum::isnumber() const {
     return true;
 }
 
-CRnum* CRnum::exp() const { 
-    return new CRnum(std::exp(value ));
+std::unique_ptr<CRobj> CRnum::exp() const { 
+    return std::make_unique< CRnum>(std::exp(value ));
 }
 
 double CRnum::initialize(){

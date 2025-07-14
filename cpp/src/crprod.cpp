@@ -9,51 +9,49 @@ CRprod::CRprod(size_t i, size_t l){
     index = i; 
 }
 
-CRobj* CRprod::add(const CRobj& target) const {
-    return new CRexpr(oc::ADD, *this->copy(), *target.copy());
+std::unique_ptr<CRobj> CRprod::add(const CRobj& target) const {
+    return std::make_unique< CRexpr>(oc::ADD, *this->copy(), *target.copy());
 }
 
-CRobj* CRprod::mul(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRprod::mul(const CRobj& target) const { 
     if (index != target.index) {
-        auto result = copy();
-        CRobj* temp = nullptr;
+        std::unique_ptr<CRobj> result = copy();
+        std::unique_ptr<CRobj> temp = nullptr;
         if (operands[0]->index > target.index) { 
             temp = operands[0]->mul(target);
         } else {
             temp = operands[0]->mul(target);
-        } delete result->operands[0];
-        result->operands[0] = temp; 
+        } 
+        result->operands[0] = std::move(temp); 
         result->simplify();
         return result;
     } else if (auto p = dynamic_cast<const CRprod*>(&target)) {
         size_t newlength = std::max(length, p->length);
-        auto result = new CRprod(index, newlength);
+        auto result = std::make_unique< CRprod>(index, newlength);
         for (size_t i = 0; i < newlength; ++i) {
             double a = (i < length) ? this->operands[i]->valueof() : 1.0;
             double b = (i < target.length) ? p->operands[i]->valueof() : 1.0;
-            result->operands[i] = new CRnum(a * b);
+            result->operands[i] = std::make_unique< CRnum>(a * b);
         }
         result->simplify();
         return result;
     } else { 
-        return new CRexpr(oc::MUL, *this->copy(), *target.copy());
+        return std::make_unique< CRexpr>(oc::MUL, *this->copy(), *target.copy());
     }
 } 
 
-CRobj* CRprod::pow(const CRobj& target) const { 
+std::unique_ptr<CRobj> CRprod::pow(const CRobj& target) const { 
     
     if (index != target.index) {
         auto result = copy();
-        CRobj* temp = nullptr;
+        std::unique_ptr<CRobj> temp = nullptr;
         for (size_t i = 0; i < length; i ++){
-            temp = operands[i]->pow(target);
-            delete result->operands[i];
-            result->operands[i] = temp;
+            result->operands[i] = operands[i]->pow(target);;
         }
     } else if (auto p = dynamic_cast<const  CRsum*> (&target)){
         size_t newlength = length + p->length -1;
         size_t n,m;
-        auto result = new CRprod(index, newlength);
+        auto result = std::make_unique< CRprod>(index, newlength);
         if (length > p->length){ 
             m = length;
             n = p->length;
@@ -83,12 +81,12 @@ CRobj* CRprod::pow(const CRobj& target) const {
                 double crt4 = crs2 * crs1;
                 crs1 = crt4;
             }
-            result->operands[i] = new CRnum(crs1);
+            result->operands[i] = std::make_unique< CRnum>(crs1);
         }
         result->simplify();
         return result;
     } else { 
-        return new CRexpr(oc::POW, *this->copy(), *target.copy());
+        return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
 
     }
 }
@@ -103,10 +101,7 @@ void CRprod::simplify() {
     // note: will be (a1^a2^...^ak^0^...an) = (1)^...^an = 1
     if (found < length){
         operands.resize(1);
-        auto temp = new CRnum(1);
-        length = 1;
-        delete operands[0];
-        operands[0] = temp;
+        operands[0] = std::make_unique<CRnum>(1);
     } else {
         size_t p = 0;
         for (size_t i = 0; i < length; i++){
@@ -117,11 +112,8 @@ void CRprod::simplify() {
                 std::swap(operands[i],operands[p]);
             }
         }
-        for (size_t i = p; i < length; i++){
-            delete operands[i];
-        }
         if (p == 0){
-            operands.assign(1,new CRnum(1));
+            operands.assign(1,std::make_unique< CRnum>(1));
             length = 1;
         } else{ 
             operands.resize(p);
@@ -146,31 +138,31 @@ void CRprod::shift(size_t i) {
     }
 }
 
-CRobj* CRprod::exp() const { 
-    return new CRexpr(oc::EXP, *this->copy());
+std::unique_ptr<CRobj> CRprod::exp() const { 
+    return std::make_unique< CRexpr>(oc::EXP, *this->copy());
 }
 
-CRobj* CRprod::ln() const { 
-    auto result = new CRsum(index, length);
+std::unique_ptr<CRobj> CRprod::ln() const { 
+    auto result = std::make_unique< CRsum>(index, length);
 
     for (size_t i = 0; i < length; i++){ 
         auto temp = operands[i]->ln();
-        result->operands[i] = temp;
+        result->operands[i] = std::move( temp);
     }
     result->simplify();
     return result;
 }
 
-CRobj* CRprod::sin() const { 
-    return new CRexpr(oc::SIN, *this->copy());
+std::unique_ptr<CRobj> CRprod::sin() const { 
+    return std::make_unique< CRexpr>(oc::SIN, *this->copy());
 }
 
-CRobj* CRprod::cos() const { 
-    return new CRexpr(oc::COS, *this->copy());
+std::unique_ptr<CRobj> CRprod::cos() const { 
+    return std::make_unique< CRexpr>(oc::COS, *this->copy());
 }
 
-CRprod* CRprod::copy() const{
-    auto result = new CRprod(index, length);
+std::unique_ptr<CRobj> CRprod::copy() const{
+    auto result = std::make_unique< CRprod>(index, length);
     for (size_t i = 0; i < length; i++ ){ 
         result->operands[i] = operands[i]->copy(); 
     }
@@ -185,15 +177,14 @@ CRprod* CRprod::copy() const{
         }
     }
 
-    
     return result;
 }
 
-CRobj* CRprod::correctp(size_t nl) const{
+std::unique_ptr<CRobj> CRprod::correctp(size_t nl) const{
     auto result = copy();
     result->operands.resize(nl);
     for (size_t i = length; i< nl; i++){ 
-        result->operands[i] = new CRnum(1.0);
+        result->operands[i] = std::make_unique< CRnum>(1.0);
     }
     return result;
 }
