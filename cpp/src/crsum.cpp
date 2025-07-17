@@ -5,16 +5,18 @@
 #include "crtrig.hpp"
 
 
-CRsum:: CRsum(size_t i, size_t l){
+CRsum:: CRsum(ssize_t i, size_t l){
     index = i;
     length = l;
-    operands.resize(length, nullptr); 
+    operands.resize(length); 
 }
 
-CRsum::CRsum(size_t i, double x, double h){ 
+CRsum::CRsum(ssize_t i, double x, double h){ 
     length = 2; 
     index =i;
-    operands = {new CRnum(x), new CRnum(h)};
+    operands.reserve(2);
+    operands.push_back(std::make_unique< CRnum>(x));
+    operands.push_back(std::make_unique< CRnum>(h));
 }
 
 std::unique_ptr<CRobj> CRsum::copy() const { 
@@ -36,16 +38,20 @@ std::unique_ptr<CRobj> CRsum::copy() const {
 
 // always assume invariant 
 std::unique_ptr<CRobj> CRsum::add(const CRobj& target) const { 
+    std::cout<<"CRsum called here\n";
     if (target.index != index){
         auto result = copy();
         std::unique_ptr<CRobj> temp = nullptr;
         if (operands[0]->index > target.index) {
-            auto temp = operands[0]->add(target);
+            temp = operands[0]->add(target);
         } else { 
-            auto temp = operands[0]->add(target);
+            temp = target.add(*operands[0]);
         }
+        std::cout<<"Finished adding\n";
         result->operands[0] = std::move(temp);
+        std::cout<<"Finished moving\n";
         result->simplify();
+        std::cout<<"Finished simplifying\n";
         return result;
     } else if (auto p = dynamic_cast<const CRsum*>(&target)) {
         size_t maxLen = std::max(length, p->length);
@@ -71,7 +77,7 @@ std::unique_ptr<CRobj> CRsum::mul(const CRobj& target) const {
             if (operands[0]->index > target.index) {
                 temp = operands[0]->mul(target);
             } else { 
-                temp = operands[0]->mul(target);
+                temp = target.mul(*operands[0]);
             }
             result->operands[0] = std::move(temp);
         }
@@ -138,6 +144,8 @@ std::unique_ptr<CRobj> CRsum::pow(const CRobj& target) const {
                 }  
             }
             return result;
+        } else {
+            return nullptr;
         }
     } else {
         return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());

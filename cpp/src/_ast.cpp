@@ -8,8 +8,6 @@ the proper start and step and index. Then, we call crinit that passes the number
 needed for each one
 */
 
-
-
 std::unique_ptr<CRobj> m1 = std::make_unique< CRnum>(-1);
 
 std::unique_ptr<CRobj> ASTvar::crmake(){
@@ -25,22 +23,33 @@ std::unique_ptr<CRobj> ASTbin::crmake(){
     std::unique_ptr<CRobj> result;
     auto crleft = left->crmake();
     auto  crright = right->crmake();
+    std::cout<<crleft->index<<" "<<crright->index<<"\n";
     switch (optype) {
         case bt::ADD:
-            result = crleft->add(*crright);
+            if (crleft->index > crright->index){ 
+                result = crleft->add(*crright);
+            } else {
+                result = crright->add(*crleft);
+            }
             break;
         case bt::MUL:
-            
-            result = crleft->mul(*crright);
+            if (crleft->index > crright->index){ 
+                result = crleft->mul(*crright);
+            } else { 
+                result = crright->mul(*crleft);
+            }
             break;
         case bt::DIV:
             result = (crleft->mul(*crright))->pow(*m1);
             break;
         case bt::SUB:
-            result = (crleft->add((*crright->mul(*m1))));
+            if (crleft->index > crright->index){ 
+                result = crleft->add((*crright->mul(*m1)));
+            } else {
+                result = (crright->mul(*m1))->add(*crleft);
+            }
             break;
         case bt::POW:
-            //std::cout << "here! \n";
             result = (crleft->pow(*crright));
             break;
     }
@@ -69,30 +78,75 @@ std::unique_ptr<CRobj> ASTun::crmake(){
 }
 
 void ASTnode::crinit(std::vector<size_t> p){
+    std::cout<<"crinit called\n";
     cr = crmake();
+    
     cr->initialize();
     params = p;
 }
 
 // potentially can use CRtable? 
 // maybe optimization?
-void ASTnode::_creval(const CRobj& c, size_t i){
-    if (i >= params.size()){
-        return;
-    } else { 
-        // expensive
-        auto cc = c.copy();
-        auto val = 0;
-        for (size_t j = 0; j < params[i]; j++){
-            result.push_back(cc->valueof());
-            _creval(*cc, i+1);
-            cc->shift(i);
+
+
+// void ASTnode::_creval(const CRobj& c, size_t i){
+//     if (i >= params.size()){
+//         return;
+//     } else { 
+//         // expensive
+//         auto cc = c.copy();
+//         auto val = 0;
+//         for (size_t j = 0; j < params[i]; j++){
+//             result.push_back(cc->valueof());
+//             _creval(*cc, i+1);
+//             cc->shift(i);
+//         }
+//     }
+// }
+
+
+//nonrecursive for any number of parameters
+void ASTnode::_creval(){ 
+    size_t n = params.size();
+    std::vector<size_t> ind;
+    std::vector<std::unique_ptr<CRobj>> crs;
+    ind.resize(n);
+    crs.reserve(n);
+    crs.push_back(cr->copy());
+    ssize_t i = n-1 ;
+    while (true) {
+        result.push_back(crs[n-1]->valueof());
+        crs[i]->shift(i);
+        i = params.size()-1;
+        while (i >= 0){
+            ind[i] ++;
+            if (ind[i] < params[i]){
+                for (size_t j = i+1; j < n; j   ++){
+                    crs[j] = crs[j-1]->copy();
+                    ind[j] = 0;
+                }
+                break;
+            }
+            ind[i] = 0;
+            crs[i] = crs[i-1]->copy(); 
+            i--;
+        }
+        if (i < 0){
+            break;
         }
     }
+
+
+    for (size_t i = 0; i < result.size(); i++){ 
+        std::cout<<result[i]<<" ";
+    }
+    std::cout<<"\n";
 }
 
+
+
 std::vector<double> ASTnode::creval(){
-    _creval(*cr,0);
+    _creval();
     return result;
 }
 
@@ -105,7 +159,7 @@ void ASTnode::view(){
 }
 
 void ASTvar::view(){
-    std::cout<<"astvar(x)\n";
+    std::cout<<"astvar("<<index<<")\n";
 }
 
 void ASTnum::view(){

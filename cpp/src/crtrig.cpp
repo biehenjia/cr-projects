@@ -4,10 +4,10 @@
 #include "crnum.hpp"
 #include "crprod.hpp"
 
-CRtrig::CRtrig(size_t i, oc t, size_t l) {
+CRtrig::CRtrig(ssize_t i, oc t, size_t l) {
     length = l;
     trigtype = t;
-    operands.resize(length,nullptr);
+    operands.resize(length);
     index = i;
 }
 
@@ -62,20 +62,20 @@ std::unique_ptr<CRobj> CRtrig::mul(const CRobj& target) const {
         std::unique_ptr<CRobj> c = nullptr;
         std::unique_ptr<CRobj> t = nullptr;
         if (length/2 > p->length){
-            auto o1 = operands;
+            const auto& o1 = operands;
             c = p->correctp(length/2);
-            auto o2 = c->operands;
+            const auto& o2 = c->operands;
             size_t L = length/2   ;
 
         } else if (length/2 < p->length){
             t = correctt(p->length);
-            auto o1 = t->operands;
-            auto o2 = p->operands;
+            const auto& o1 = t->operands;
+            const auto& o2 = p->operands;
             size_t L = p->length;
 
         } else {
-            auto o1 = operands;
-            auto o2 = p->operands;
+            const auto& o1 = operands;
+            const auto& o2 = p->operands;
             size_t L = length/2;
         }
         result->operands.resize(L*2);
@@ -91,8 +91,8 @@ std::unique_ptr<CRobj> CRtrig::mul(const CRobj& target) const {
         return result;
     } else { 
         return std::make_unique< CRexpr>(oc::MUL,*this->copy(), *target.copy());
-
     }
+    return nullptr;
 }
 
 std::unique_ptr<CRobj> CRtrig::correctt(size_t nl) const { 
@@ -108,18 +108,6 @@ std::unique_ptr<CRobj> CRtrig::correctt(size_t nl) const {
     return result;
 }
 
-std::unique_ptr<CRobj> CRtrig::correctt(size_t nl) const { 
-    auto result = copy();
-    result->operands.resize(nl * 2);
-    for (size_t i = 0; i < length/2; i++){
-        result->operands[i] = operands[i+length/2]->copy();
-    }
-    for (size_t i = length/2; i < nl*2; i++){
-        result->operands[i] = std::make_unique< CRnum>(0.0);
-        result->operands[i+nl] = std::make_unique< CRnum>(1.0);
-    }
-    return result;
-}
 
 double CRtrig::valueof() const {
     double result = 0;

@@ -29,20 +29,20 @@ PYBIND11_MODULE(pycrlib, m) {
         .value("COT",  ut::COT)
         .export_values();
 
-    py::class_<ASTnode, std::unique_ptr<ASTnode>>(m, "ASTnode")
+    py::class_<ASTnode, std::shared_ptr<ASTnode>>(m, "ASTnode")
         .def("crinit", &ASTnode::crinit, py::arg("params"))
         .def("creval", &ASTnode::creval)
         .def("view",   &ASTnode::view);
 
-    py::class_<ASTnum, ASTnode, std::unique_ptr<ASTnum>>(m, "ASTnum")
+    py::class_<ASTnum, ASTnode, std::shared_ptr<ASTnum>>(m, "ASTnum")
     .def(py::init<double>(), py::arg("value"));
 
-    py::class_<ASTvar, ASTnode, std::unique_ptr<ASTvar>>(m, "ASTvar")
+    py::class_<ASTvar, ASTnode, std::shared_ptr<ASTvar>>(m, "ASTvar")
     .def(py::init<size_t, double, double>(),py::arg("index"), py::arg("start"), py::arg("step"));
 
-    py::class_<ASTbin, ASTnode, std::unique_ptr<ASTbin>>(m, "ASTbin", py::dynamic_attr())
-    .def(py::init<bt, std::unique_ptr<ASTnode>, std::unique_ptr<ASTnode>>(),py::arg("op"), py::arg("left"), py::arg("right"));
+    py::class_<ASTbin, ASTnode, std::shared_ptr<ASTbin>>(m, "ASTbin", py::dynamic_attr())
+    .def(py::init<bt, std::shared_ptr<ASTnode>, std::shared_ptr<ASTnode>>(),py::arg("op"), py::arg("left"), py::arg("right"));
 
-    py::class_<ASTun, ASTnode, std::unique_ptr<ASTun>>(m, "ASTun", py::dynamic_attr())
-    .def(py::init<ut, std::unique_ptr<ASTnode>>(),py::arg("op"), py::arg("child"));
+    py::class_<ASTun, ASTnode, std::shared_ptr<ASTun>>(m, "ASTun", py::dynamic_attr())
+    .def(py::init<ut, std::shared_ptr<ASTnode>>(),py::arg("op"), py::arg("child"));
 }

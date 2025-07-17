@@ -3,9 +3,9 @@
 #include "crnum.hpp"
 #include "crsum.hpp"
 
-CRprod::CRprod(size_t i, size_t l){
+CRprod::CRprod(ssize_t i, size_t l){
     length = l;
-    operands.resize(l,nullptr);
+    operands.resize(l);
     index = i; 
 }
 
@@ -46,8 +46,9 @@ std::unique_ptr<CRobj> CRprod::pow(const CRobj& target) const {
         auto result = copy();
         std::unique_ptr<CRobj> temp = nullptr;
         for (size_t i = 0; i < length; i ++){
-            result->operands[i] = operands[i]->pow(target);;
+            result->operands[i] = operands[i]->pow(target);
         }
+        return result;
     } else if (auto p = dynamic_cast<const  CRsum*> (&target)){
         size_t newlength = length + p->length -1;
         size_t n,m;
@@ -87,7 +88,6 @@ std::unique_ptr<CRobj> CRprod::pow(const CRobj& target) const {
         return result;
     } else { 
         return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
-
     }
 }
 
@@ -113,7 +113,9 @@ void CRprod::simplify() {
             }
         }
         if (p == 0){
-            operands.assign(1,std::make_unique< CRnum>(1));
+            operands.clear();
+            operands.reserve(1);
+            operands.push_back(std::make_unique< CRnum>(1));
             length = 1;
         } else{ 
             operands.resize(p);
@@ -176,7 +178,6 @@ std::unique_ptr<CRobj> CRprod::copy() const{
             result->isnumbers[i] = isnumbers[i];
         }
     }
-
     return result;
 }
 

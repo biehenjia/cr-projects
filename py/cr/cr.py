@@ -24,6 +24,7 @@ class CRobject:
         self.length = None
         self.fastvalues = None
         self.isnotnumbers = None
+        self.index = None
     
     def valueof(self):
         if self.fastvalues is not None:

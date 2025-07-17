@@ -3,7 +3,7 @@
 
 class CRtrig : public CRobj { 
     public:
-        CRtrig(size_t i, oc t, size_t l);
+        CRtrig(ssize_t i, oc t, size_t l);
 
         std::unique_ptr<CRobj> add(const CRobj& target) const override;
         std::unique_ptr<CRobj> mul(const CRobj& target) const override;

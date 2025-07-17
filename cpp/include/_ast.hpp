@@ -10,15 +10,15 @@ class ASTnode {
         ASTnode() {};
         virtual ~ASTnode() = default;
         virtual std::unique_ptr<CRobj> crmake() = 0;
-        std::unique_ptr<ASTnode> left;
-        std::unique_ptr<ASTnode> right;
+        std::shared_ptr<ASTnode> left;
+        std::shared_ptr<ASTnode> right;
         // exposed
         void crinit(std::vector<size_t>);
 
         std::vector<double> result;
         std::vector<size_t> params;
 
-        void _creval(const CRobj& c, size_t i);
+        void _creval();
         std::vector<double> creval();
 
         std::unique_ptr<CRobj> cr;
@@ -45,7 +45,7 @@ class ASTvar : public ASTnode {
 
 class ASTbin : public ASTnode { 
     public:
-        ASTbin(bt o, std::unique_ptr<ASTnode> l,  std::unique_ptr<ASTnode> r) {
+        ASTbin(bt o, std::shared_ptr<ASTnode> l,  std::shared_ptr<ASTnode> r) {
             left = std::move(l); 
             right = std::move(r);
             optype = o;
@@ -57,7 +57,7 @@ class ASTbin : public ASTnode {
 
 class ASTun : public ASTnode {
     public:
-        ASTun(ut o, std::unique_ptr<ASTnode> l){
+        ASTun(ut o, std::shared_ptr<ASTnode> l){
             left = std::move(l); 
             optype = o;
         }

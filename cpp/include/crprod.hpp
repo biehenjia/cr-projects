@@ -3,7 +3,7 @@
 
 class CRprod :public CRobj {
     public: 
-        CRprod(size_t i, size_t l);
+        CRprod(ssize_t i, size_t l);
         
         std::unique_ptr<CRobj> add(const CRobj& target) const override;
         std::unique_ptr<CRobj> mul(const CRobj& target) const override;

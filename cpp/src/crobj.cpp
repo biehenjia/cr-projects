@@ -3,7 +3,7 @@
 
 CRobj::CRobj(size_t l){
     length = l;
-    operands.resize(l,nullptr);
+    operands.resize(l);
 }
 
 double CRobj::valueof() const{

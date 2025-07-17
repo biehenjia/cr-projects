@@ -4,8 +4,8 @@
 
 class CRsum : public CRobj {
     public: 
-        CRsum(size_t i, size_t l); 
-        CRsum(size_t i, double x, double h);
+        CRsum(ssize_t i, size_t l); 
+        CRsum(ssize_t i, double x, double h);
         
         std::unique_ptr<CRobj> add(const CRobj& target) const override;
         std::unique_ptr<CRobj> mul(const CRobj& target) const override;

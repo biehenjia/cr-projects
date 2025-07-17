@@ -3,7 +3,7 @@
 CRexpr::CRexpr(oc ot, const CRobj& o1) {
     optype = ot;
     length = 1; 
-    operands.resize(1,nullptr);
+    operands.resize(1);
     index = o1.index;
     operands[0] = o1.copy();
 }
@@ -11,7 +11,7 @@ CRexpr::CRexpr(oc ot, const CRobj& o1) {
 CRexpr::CRexpr(oc ot, const CRobj& o1, const CRobj& o2) {
     optype = ot;
     length = 2;
-    operands.resize(2,nullptr);
+    operands.resize(2);
     index = o1.index > o2.index ? o1.index : o2.index;
     operands[0] = o1.copy();
     operands[1] = o2.copy();
@@ -20,7 +20,7 @@ CRexpr::CRexpr(oc ot, const CRobj& o1, const CRobj& o2) {
 CRexpr::CRexpr(oc ot, size_t l){
     optype = ot;
     length = l;
-    operands.resize(l,nullptr);
+    operands.resize(l);
 }
 
 std::unique_ptr<CRobj> CRexpr::add(const CRobj&) const {
@@ -78,12 +78,13 @@ std::unique_ptr<CRobj> CRexpr::copy() const{
     if (initialized){
         result->fastvalues.resize(length);
         result->isnumbers.resize(length);
+        for (size_t i = 0; i < length; i++){ 
+            result->fastvalues[i] = fastvalues[i];
+            result->isnumbers[i] = isnumbers[i];
+        }
     }
 
-    for (size_t i = 0; i < length; i++){ 
-        result->fastvalues[i] = fastvalues[i];
-        result->isnumbers[i] = isnumbers[i];
-    }
+    
     return result;
 }
 

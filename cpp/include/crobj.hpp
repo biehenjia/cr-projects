@@ -42,7 +42,7 @@ enum class oc {
 class CRobj {
     public:
         CRobj(){}; 
-        CRobj(size_t i){};
+        CRobj(size_t l);
         virtual ~CRobj() =default ;
 
         virtual std::unique_ptr<CRobj> add(const CRobj& target) const = 0;
@@ -72,6 +72,6 @@ class CRobj {
         size_t length;
         bool initialized = false;
 
-        size_t index;
+        ssize_t index;
     
 };

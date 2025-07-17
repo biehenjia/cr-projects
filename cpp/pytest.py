@@ -19,3 +19,18 @@ for i in range(1000000):
     y = ne.evaluate(expr, local_dict={"x": x})
 
 print(f"Iteration {i+1}: {start-time.perf_counter()*1000:.2f} ms")
+
+
+x = [0,0,0]
+for i in range(10):
+    y = x[:]
+    for j in range(10):
+        z = y[:] 
+        for k in range(10):
+            z[0] += 1
+            print(z)
+        y[1] += 1
+    x[0] += 1
+
+
+#loop 
