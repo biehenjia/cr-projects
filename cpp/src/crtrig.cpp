@@ -172,3 +172,7 @@ void CRtrig::shift(size_t i){
     }
     
 }
+
+void CRtrig::print_tree() const {
+    
+}

@@ -20,6 +20,7 @@ class CRtrig : public CRobj {
         void shift(size_t index) override;
         // double initialize();
         double valueof() const;
+        void print_tree() const override;
 
         oc trigtype;
         std::unique_ptr<CRobj> correctt(size_t nl) const;

@@ -69,17 +69,17 @@ std::unique_ptr<CRobj> CRsum::add(const CRobj& target) const {
 }
 
 std::unique_ptr<CRobj> CRsum::mul(const CRobj& target) const {
-
+    
     if (target.index != index){
         auto result = copy();
         std::unique_ptr<CRobj> temp = nullptr;
         for (size_t i = 0; i< length; i++){
-            if (operands[0]->index > target.index) {
-                temp = operands[0]->mul(target);
+            if (operands[i]->index > target.index) {
+                temp = operands[i]->mul(target);
             } else { 
-                temp = target.mul(*operands[0]);
+                temp = target.mul(*operands[i]);
             }
-            result->operands[0] = std::move(temp);
+            result->operands[i] = std::move(temp);
         }
         result->simplify();
         return result;
@@ -187,23 +187,46 @@ void CRsum::shift(size_t i ) {
     if (index > i){
         for (size_t j = 0; j < length; j++){ 
             if (!isnumbers[j]){ 
-                std::cout<<"proper shift\n";
                 operands[j]->shift(i);
                 fastvalues[j] = operands[j]->valueof();
             }
         }
     } else {
-        for (size_t j = 0; j < length-1; j++){
+        for (size_t j = 0; j < operands.size()-1; j++){
             fastvalues[j] += fastvalues[j+1];
         }
     }
 }
 
 void CRsum::simplify() {
-    size_t j = length - 1;
-    while (j > 0 && operands[j]->valueof() == 0){
-        j--;
+    if (operands.empty()){
+        return;
     }
-    operands.resize(j+1);
+    size_t j = operands.size() - 1;
+    while (j > 0) {
+        const CRnum* p = dynamic_cast<const CRnum*>(operands[j].get());
+        if (p && operands[j]->valueof() == 0) {
+            j--;
+        } else {
+            break;
+        }
+    }
+    if (operands.size() != j+1){
+        operands.resize(j+1);
+
+    }
+    length = operands.size();
+    
+}
+
+void CRsum::print_tree() const {
+    std::cout<<"CRsum(";
+    for (size_t i = 0; i < operands.size(); i++){ 
+        operands[i]->print_tree();
+        if (i+1 < operands.size()){
+            std::cout<<", ";
+        }
+    }
+    std::cout<<")";
 }
 

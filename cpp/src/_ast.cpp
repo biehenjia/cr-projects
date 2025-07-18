@@ -80,33 +80,20 @@ std::unique_ptr<CRobj> ASTun::crmake(){
 void ASTnode::crinit(std::vector<size_t> p){
     std::cout<<"crinit called\n";
     cr = crmake();
-
+    cr->print_tree();
+    std::cout<<"crmade!\n";
     cr->initialize();
+    std::cout<<"initialized!\n";
     params = p;
     _creval();
-    // for (size_t i = 0; i < result.size(); i++){ 
-    //     std::cout<<result[i] <<" ";
-    // } std::cout<<"\n";
+    
 }
 
 // potentially can use CRtable? 
 // maybe optimization?
 
 
-// void ASTnode::_creval(const CRobj& c, size_t i){
-//     if (i >= params.size()){
-//         return;
-//     } else { 
-//         // expensive
-//         auto cc = c.copy();
-//         auto val = 0;
-//         for (size_t j = 0; j < params[i]; j++){
-//             result.push_back(cc->valueof());
-//             _creval(*cc, i+1);
-//             cc->shift(i);
-//         }
-//     }
-// }
+
 
 
 //nonrecursive for any number of parameters
@@ -121,54 +108,21 @@ void ASTnode::_creval(){
     crs.reserve(n);
 
     crs.push_back(cr->copy());
-    // for (size_t x = 0; x < crs[0]->operands.size(); x++ ){
-    //     std::cout<<cr->fastvalues[x]<<" ";
-    // }
-    // std::cout<<" cr fastvalues \n";
-    // for (size_t x = 0; x < crs[0]->operands.size(); x++ ){
-    //     std::cout<<crs[0]->operands[x]->valueof()<<" ";
-    // }
-    // std::cout<<" operands \n";
-    // for (size_t x = 0; x < crs[0]->operands.size(); x++ ){
-    //     std::cout<<crs[0]->fastvalues[x]<<" ";
-    // }
-    // std::cout<<" fastvalues \n";
 
-    // std::cout<<crs[0]->index<<" ";
-    // for (size_t i = 1; i < n; i++){
-    //     crs.push_back(crs[i-1]->copy());
-    //     std::cout<<crs[i]->index<< " ";
-    // }
-    // std::cout<<"\n";
+    for (size_t i = 1; i < n; i++){
+        crs.push_back(crs[i-1]->copy());
+    }
 
     ssize_t i = n-1 ;
-    size_t ct = 0;
     while (true) {
 
-        // std::cout<<"__________\n";
-        // for (size_t i = 0; i < n; i++){
-        //     std::cout<< ind[i]<<" ";
-        // }
-        // std::cout<<"\n";
-
         
-        for (size_t j = 0; j < n; j++){
-            std::cout<<ind[j]<<" ";
-        }std::cout<<"\n";
-        for (size_t j = 0; j < n; j++){
-            for (size_t k = 0; k < crs[j]->operands.size(); k++){
-                std::cout<<crs[j]->fastvalues[k]<<" ";
-            }
-            std::cout<<" cr__\n";
-        }
-        // std::cout<<crs[n-1]->valueof()<<" pushing back\n";
-
-        result.push_back(crs[n-1]->valueof());
-        crs[i]->shift(i);
-        ct ++;
+        result.push_back(crs[n-1]->valueof());        
     
 
         i = params.size()-1;
+        crs[i]->shift(i);
+        
         
         while (i >= 0){
             ind[i] ++;
@@ -182,6 +136,7 @@ void ASTnode::_creval(){
 
             ind[i] = 0;
             if (i > 0){
+                crs[i-1]->shift(i-1);
                 std::cout<<"Outer loop\n";
                 crs[i] = crs[i-1]->copy(); 
             }

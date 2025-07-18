@@ -19,6 +19,7 @@ class CRexpr : public CRobj {
         std::unique_ptr<CRobj> cos() const override;
 
         std::unique_ptr<CRobj> copy() const override;
+        void print_tree() const override;
 
         double valueof() const override;
         void shift(size_t index) override;

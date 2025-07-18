@@ -18,6 +18,7 @@ class CRprod :public CRobj {
 
         void simplify() override;
         void shift(size_t index) override;
+        void print_tree() const override;
 
         std::unique_ptr<CRobj> copy() const override;
         std::unique_ptr<CRobj> correctp(size_t nl) const;

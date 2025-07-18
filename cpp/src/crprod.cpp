@@ -189,3 +189,7 @@ std::unique_ptr<CRobj> CRprod::correctp(size_t nl) const{
     }
     return result;
 }
+
+void CRprod::print_tree() const { 
+    
+}

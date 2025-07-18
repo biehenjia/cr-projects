@@ -62,6 +62,7 @@ class CRobj {
         virtual double valueof() const;
         virtual bool isnumber() const;
         
+        virtual void print_tree() const = 0;
 
         virtual void shift(size_t index);
     

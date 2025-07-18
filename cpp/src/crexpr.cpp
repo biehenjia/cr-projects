@@ -126,3 +126,15 @@ void CRexpr::shift(size_t i) {
         }
     }
 }
+
+
+void CRexpr::print_tree() const { 
+    std::cout << "CRexpr(";
+    for (size_t i = 0; i < operands.size(); i++){
+        operands[i]->print_tree();
+
+        if (i+1 < operands.size()){ 
+            std::cout<<", ";
+        }
+    } std::cout<<")";
+}

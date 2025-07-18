@@ -19,7 +19,7 @@ class CRsum : public CRobj {
 
         std::unique_ptr<CRobj> sin() const override;
         std::unique_ptr<CRobj> cos() const override;
-
+        void print_tree() const override;
         void simplify() override;
         std::unique_ptr<CRobj> copy() const override;
         void shift(size_t index) override;

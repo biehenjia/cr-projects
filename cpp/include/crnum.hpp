@@ -19,7 +19,8 @@ class CRnum : public CRobj {
         double initialize(); 
         double valueof() const;
         bool isnumber() const override;
-    
+        void print_tree() const override;
+
         void shift(size_t index) override;
         double value;
 
