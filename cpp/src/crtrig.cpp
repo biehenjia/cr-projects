@@ -151,23 +151,23 @@ void CRtrig::simplify() {
 
 void CRtrig::shift(size_t i){
     if (index != i){ 
-        for (size_t i = 0; i < length; i++){ 
-            if (isnumbers[i]){ 
-                operands[i]->shift(i);
-                fastvalues[i] = operands[i]->valueof();
+        for (size_t j = 0; j < length; j++){ 
+            if (!isnumbers[j]){ 
+                operands[j]->shift(i);
+                fastvalues[j] = operands[j]->valueof();
             }
         }
     } else { 
         double r1, r2, r3, r4, z;
         size_t t = length/2;
-        for (size_t i = 0; i < t-1; i++){ 
-            r1 = fastvalues[i] * fastvalues[i+t+1];
-            r2 = fastvalues[i+t] * fastvalues[i+1];
+        for (size_t j = 0; j < t-1; j++){ 
+            r1 = fastvalues[j] * fastvalues[j+t+1];
+            r2 = fastvalues[j+t] * fastvalues[j+1];
             z = r1 + r2;
-            r3 = fastvalues[i+t] * fastvalues[i+t+1];
-            r4 = fastvalues[i] * fastvalues[i+1];
-            fastvalues[i+t] = r3-r4;
-            fastvalues[i] = z;
+            r3 = fastvalues[j+t] * fastvalues[j+t+1];
+            r4 = fastvalues[j] * fastvalues[j+1];
+            fastvalues[j+t] = r3-r4;
+            fastvalues[j] = z;
         }
     }
     

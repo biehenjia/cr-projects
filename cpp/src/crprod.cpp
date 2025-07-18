@@ -127,15 +127,15 @@ void CRprod::simplify() {
 
 void CRprod::shift(size_t i) { 
     if (index > i){
-        for (size_t i = 0; i < length; i++){ 
-            if (isnumbers[i]){ 
-                operands[i]->shift(i);
-                fastvalues[i] = operands[i]->valueof();
+        for (size_t j = 0; j < length; j++){ 
+            if (!isnumbers[j]){ 
+                operands[j]->shift(i);
+                fastvalues[j] = operands[j]->valueof();
             }
         }
     } else { 
-        for (size_t i = 0; i < length-1; i++){
-            fastvalues[i] *= fastvalues[i+1 ];
+        for (size_t j = 0; j < length-1; j++){
+            fastvalues[j] *= fastvalues[j+1 ];
         }
     }
 }

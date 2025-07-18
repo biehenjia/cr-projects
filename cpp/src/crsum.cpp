@@ -47,11 +47,11 @@ std::unique_ptr<CRobj> CRsum::add(const CRobj& target) const {
         } else { 
             temp = target.add(*operands[0]);
         }
-        std::cout<<"Finished adding\n";
+        //std::cout<<"Finished adding\n";
         result->operands[0] = std::move(temp);
-        std::cout<<"Finished moving\n";
+        //std::cout<<"Finished moving\n";
         result->simplify();
-        std::cout<<"Finished simplifying\n";
+        //std::cout<<"Finished simplifying\n";
         return result;
     } else if (auto p = dynamic_cast<const CRsum*>(&target)) {
         size_t maxLen = std::max(length, p->length);
@@ -185,15 +185,16 @@ std::unique_ptr<CRobj> CRsum::cos() const {
 
 void CRsum::shift(size_t i ) {
     if (index > i){
-        for (size_t i = 0; i < length; i++){ 
-            if (isnumbers[i]){ 
-                operands[i]->shift(i);
-                fastvalues[i] = operands[i]->valueof();
+        for (size_t j = 0; j < length; j++){ 
+            if (!isnumbers[j]){ 
+                std::cout<<"proper shift\n";
+                operands[j]->shift(i);
+                fastvalues[j] = operands[j]->valueof();
             }
         }
     } else {
-        for (size_t i = 0; i < length-1; i++){
-            fastvalues[i] += fastvalues[i+1];
+        for (size_t j = 0; j < length-1; j++){
+            fastvalues[j] += fastvalues[j+1];
         }
     }
 }
