@@ -24,7 +24,7 @@ std::unique_ptr<CRobj> CRnum::pow(const CRobj& target) const {
     if (auto p= dynamic_cast<const CRnum*>(&target)){
         return std::make_unique< CRnum>(std::pow(this->value,p->value));
     } else if (auto p = dynamic_cast<const CRsum*>(&target)){
-        auto result = std::make_unique< CRsum>(p->index, p->length);
+        auto result = std::make_unique< CRprod>(p->index, p->length);
         for (size_t i = 0; i< p->length; i++){ 
             result->operands[i] = std::make_unique< CRnum>(std::pow(this->value,p->operands[i]->valueof()));
         }
@@ -75,4 +75,8 @@ void CRnum::shift(size_t index){
 
 void CRnum::print_tree() const { 
     std::cout << "CRnum("<<value<<")";
+}
+
+std::string CRnum::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    return "";
 }

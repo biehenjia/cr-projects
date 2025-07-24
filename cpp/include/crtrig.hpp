@@ -21,9 +21,9 @@ class CRtrig : public CRobj {
         // double initialize();
         double valueof() const;
         void print_tree() const override;
+        std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
 
         oc trigtype;
         std::unique_ptr<CRobj> correctt(size_t nl) const;
-
         size_t index;
 };

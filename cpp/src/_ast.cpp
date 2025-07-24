@@ -80,23 +80,63 @@ std::unique_ptr<CRobj> ASTun::crmake(){
 void ASTnode::crinit(std::vector<size_t> p){
     std::cout<<"crinit called\n";
     cr = crmake();
-    cr->print_tree();
+    
     std::cout<<"crmade!\n";
     cr->initialize();
     std::cout<<"initialized!\n";
+    cr->print_tree();
+    std::cout<<"\n";
     params = p;
+
+    std::string res;
+    std::string indent = "";
+    std::string expr = "0"; 
+
+    for (size_t i = 0; i<params.size(); i++) {
+        expr = std::format("[{} for _ in range({})]", expr,params[i]);
+    } 
+
+    res = "results = " + expr + "\n";
+    res += cr->prepare(*cr);
+    std::string base = "base = [";
+    std::string delim = ",";
+
+    for (size_t i = 0; i < cr->length; i++){
+        if (i == cr->length-1){
+            delim = "";
+        }
+        base += std::format("{}{}",cr->fastvalues[i],delim);
+    } base += "]\n";
+    res += base;
+
+    std::string indexpos = "results";
+    for (size_t i = 0; i < params.size(); i++){
+        indexpos += std::format("[_{}]",i);
+    }
+
+    for (size_t i = 0; i < params.size(); i++) {
+        res += std::format("{}{}{} = base[:]\n",indent,cr->crprefix,cr->crposition);
+        res += std::format("{}for _{} in range({}):\n", indent, i, params[i]);
+        
+        indent += "    ";
+        // FIX TO GET CLASS FUNCTIONFOR VALUEOF
+        if (i == params.size()-1){
+            res += std::format("{}{} = {}{}[0]\n",indent,indexpos,cr->crprefix,cr->crposition);
+        }
+        
+        res += cr->genCode(0, i, -1, indent);
+        res += "\n";
+    }
+    std::cout<<res;
+
     _creval();
-    
 }
+
 
 // potentially can use CRtable? 
 // maybe optimization?
-
-
-
-
-
 //nonrecursive for any number of parameters
+
 void ASTnode::_creval(){ 
 
     size_t n = params.size();
@@ -108,22 +148,18 @@ void ASTnode::_creval(){
     crs.reserve(n);
 
     crs.push_back(cr->copy());
-
     for (size_t i = 1; i < n; i++){
         crs.push_back(crs[i-1]->copy());
     }
 
     ssize_t i = n-1 ;
     while (true) {
-
         
-        result.push_back(crs[n-1]->valueof());        
-    
-
         i = params.size()-1;
+        result.push_back(crs[n-1]->valueof());
+
         crs[i]->shift(i);
-        
-        
+
         while (i >= 0){
             ind[i] ++;
             if (ind[i] < params[i]){
@@ -137,7 +173,6 @@ void ASTnode::_creval(){
             ind[i] = 0;
             if (i > 0){
                 crs[i-1]->shift(i-1);
-                std::cout<<"Outer loop\n";
                 crs[i] = crs[i-1]->copy(); 
             }
 

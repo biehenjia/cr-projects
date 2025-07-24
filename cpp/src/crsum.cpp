@@ -128,24 +128,34 @@ std::unique_ptr<CRobj> CRsum::mul(const CRobj& target) const {
 std::unique_ptr<CRobj> CRsum::pow(const CRobj& target) const { 
     
     if (auto p = dynamic_cast<const CRnum*>(&target)) {
-        auto result = copy();
+        std::unique_ptr<CRobj> result = std::make_unique< CRnum>(1.0);
         double pv = p->valueof();
         if (pv >= 0 && std::floor(pv) == pv) {
+            std::cout<<"Here!\n";
             size_t exp = size_t(pv);
-            std::unique_ptr<CRobj> result = std::make_unique< CRnum>(1.0); 
+            
             std::unique_ptr<CRobj> base = copy(); 
             while (exp > 0) {
+                
                 if (exp & 1) {
-                    result = std::move(result->mul(*base));
+                    std::cout<<"glub1\n";
+                    if (result->index > base->index){
+                        result = std::move(result->mul(*base));
+                    } else {
+                        result = std::move(base->mul(*result));
+                    }
+
                 }
                 exp >>= 1;
                 if (exp) {
+                    std::cout<<"glub2\n";
                     base = std::move(base->mul(*base));
                 }  
             }
+            std::cout<<"Here?\n";
             return result;
         } else {
-            return nullptr;
+            return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
         }
     } else {
         return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
@@ -183,20 +193,6 @@ std::unique_ptr<CRobj> CRsum::cos() const {
     return result;
 }
 
-void CRsum::shift(size_t i ) {
-    if (index > i){
-        for (size_t j = 0; j < length; j++){ 
-            if (!isnumbers[j]){ 
-                operands[j]->shift(i);
-                fastvalues[j] = operands[j]->valueof();
-            }
-        }
-    } else {
-        for (size_t j = 0; j < operands.size()-1; j++){
-            fastvalues[j] += fastvalues[j+1];
-        }
-    }
-}
 
 void CRsum::simplify() {
     if (operands.empty()){
@@ -220,7 +216,7 @@ void CRsum::simplify() {
 }
 
 void CRsum::print_tree() const {
-    std::cout<<"CRsum(";
+    std::cout<<"CRsum"<<"["<<valueof()<<"]"<<"(";
     for (size_t i = 0; i < operands.size(); i++){ 
         operands[i]->print_tree();
         if (i+1 < operands.size()){
@@ -230,3 +226,45 @@ void CRsum::print_tree() const {
     std::cout<<")";
 }
 
+
+void CRsum::shift(size_t i ) {
+    if (index > i){
+        for (size_t j = 0; j < length; j++){ 
+            if (!isnumbers[j]){ 
+                operands[j]->shift(i);
+                fastvalues[j] = operands[j]->valueof();
+            }
+        }
+    } else {
+        for (size_t j = 0; j < operands.size()-1; j++){
+            fastvalues[j] += fastvalues[j+1];
+        }
+    }
+}
+
+std::string CRsum::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    std::string res = "";
+    if (order != index){
+        for (size_t i = 0; i < operands.size(); i++){ 
+            if (!operands[i]->isnumber()){
+                res += operands[i]->genCode(crposition, order, i, indent+"    ");
+            }
+        }
+    } else { 
+        res += std::format("{}for i in range({}):\n{}    {}{}[i]+={}{}[i+1]\n", 
+            indent, 
+            operands.size()-1,
+            indent,
+            crprefix,crposition,
+            crprefix,crposition
+        );
+
+    }
+    if (place != -1 && res.size()){
+        res += std::format("{}{}{}[{}]={}{}[0]\n",indent,crprefix,parent,place,crprefix,crposition);
+    }
+    
+    return res;
+}
+
+// can be called without initializing

@@ -191,5 +191,35 @@ std::unique_ptr<CRobj> CRprod::correctp(size_t nl) const{
 }
 
 void CRprod::print_tree() const { 
-    
+    std::cout<<"CRprod"<<"["<<valueof()<<"]"<<"(";
+    for (size_t i = 0; i < operands.size(); i++){ 
+        operands[i]->print_tree();
+        if (i+1 < operands.size()){
+            std::cout<<", ";
+        }
+    }
+    std::cout<<")";
+}
+
+std::string CRprod::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    std::string res = "";
+    if (order != index){
+        for (size_t i = 0; i < operands.size(); i++){ 
+            if (!operands[i]->isnumber()){
+                res += operands[i]->genCode(crposition, order, i, indent+"    ");
+            }
+        }
+    } else { 
+        res += std::format("{}for i in range({}):\n{}    {}{}[i]*={}{}[i+1]\n", 
+            indent, 
+            operands.size()-1,
+            indent,
+            crprefix,crposition,
+            crprefix,crposition
+        );
+    }
+    if (place != -1 && res.size()){
+        res += std::format("{}{}{}[{}]={}{}[0]\n",indent,crprefix,parent,place,crprefix,crposition);
+    }
+    return res;
 }

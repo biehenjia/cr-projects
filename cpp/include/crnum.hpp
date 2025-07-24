@@ -20,6 +20,7 @@ class CRnum : public CRobj {
         double valueof() const;
         bool isnumber() const override;
         void print_tree() const override;
+        std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
 
         void shift(size_t index) override;
         double value;

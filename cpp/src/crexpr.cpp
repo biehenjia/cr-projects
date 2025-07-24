@@ -23,23 +23,23 @@ CRexpr::CRexpr(oc ot, size_t l){
     operands.resize(l);
 }
 
-std::unique_ptr<CRobj> CRexpr::add(const CRobj&) const {
-    auto left = operands[0]->copy();
-    auto right = operands[1]->copy();
+std::unique_ptr<CRobj> CRexpr::add(const CRobj& target) const {
+    auto left = copy();
+    auto right = target.copy();
     auto result = std::make_unique< CRexpr>(oc::ADD, *left, *right);
     return result;
 }
 
-std::unique_ptr<CRobj> CRexpr::mul(const CRobj&) const {
-    auto left = operands[0]->copy();
-    auto right = operands[1]->copy();
+std::unique_ptr<CRobj> CRexpr::mul(const CRobj& target) const {
+    auto left = copy();
+    auto right = target.copy();
     auto result = std::make_unique< CRexpr>(oc::MUL, *left, *right);
     return result;
 }
 
-std::unique_ptr<CRobj> CRexpr::pow(const CRobj&) const { 
-    auto left = operands[0]->copy();
-    auto right = operands[1]->copy();
+std::unique_ptr<CRobj> CRexpr::pow(const CRobj& target) const { 
+    auto left = copy();
+    auto right = target.copy();
     auto result = std::make_unique< CRexpr>(oc::POW, *left, *right);
     return result;
 }
@@ -76,6 +76,7 @@ std::unique_ptr<CRobj> CRexpr::copy() const{
     }
 
     if (initialized){
+        result->initialized = true;
         result->fastvalues.resize(length);
         result->isnumbers.resize(length);
         for (size_t i = 0; i < length; i++){ 
@@ -83,8 +84,6 @@ std::unique_ptr<CRobj> CRexpr::copy() const{
             result->isnumbers[i] = isnumbers[i];
         }
     }
-
-    
     return result;
 }
 
@@ -119,17 +118,19 @@ double CRexpr::valueof() const{
 }
 
 void CRexpr::shift(size_t i) {
-    for (size_t i = 0; i < length; i++){
-        if (!isnumbers[i]){
-            operands[i]->shift(i);
-            fastvalues[i] = operands[i]->valueof();
+    
+    for (size_t j = 0; j < length; j++){
+        if (!isnumbers[j]){
+            operands[j]->shift(i);
+            fastvalues[j] = operands[j]->valueof();
         }
     }
 }
 
 
+
 void CRexpr::print_tree() const { 
-    std::cout << "CRexpr(";
+    std::cout <<"CRexpr"<<"["<<valueof()<<"]"<<"(";
     for (size_t i = 0; i < operands.size(); i++){
         operands[i]->print_tree();
 
@@ -137,4 +138,28 @@ void CRexpr::print_tree() const {
             std::cout<<", ";
         }
     } std::cout<<")";
+}
+
+std::string CRexpr::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    std::string res = "";
+    
+    for (size_t i = 0; i < operands.size(); i++){ 
+        if (!operands[i]->isnumber()){
+            res += operands[i]->genCode(crposition, order, i, indent);
+        }
+    }
+    
+    if (place != -1 && res.size()){
+        res += std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
+            crprefix,parent,place,
+            crprefix,crposition,
+            crprefix,crposition
+        );
+        std::cout<<std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
+            crprefix,parent,place,
+            crprefix,crposition,
+            crprefix,crposition
+        );
+    }
+    return res;
 }

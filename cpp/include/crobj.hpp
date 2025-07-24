@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <format>
 
 class CRsum;
 class CRnum;
@@ -45,10 +46,9 @@ class CRobj {
         CRobj(size_t l);
         virtual ~CRobj() =default ;
 
-        virtual std::unique_ptr<CRobj> add(const CRobj& target) const = 0;
-        virtual std::unique_ptr<CRobj> mul(const CRobj& target) const= 0;
-        virtual std::unique_ptr<CRobj> pow(const CRobj& target) const= 0;
-
+        virtual std::unique_ptr<CRobj> add(const CRobj& t) const = 0;
+        virtual std::unique_ptr<CRobj> mul(const CRobj& t) const= 0;
+        virtual std::unique_ptr<CRobj> pow(const CRobj& t) const= 0;
 
         virtual std::unique_ptr<CRobj> exp() const= 0;
         virtual std::unique_ptr<CRobj> ln() const= 0;
@@ -68,11 +68,18 @@ class CRobj {
     
         std::vector<std::unique_ptr<CRobj>> operands;
 
+        virtual std::string genCode(size_t parent, size_t index, ssize_t place, std::string indent) const = 0;
+        std::string prepare( CRobj& root);
+
         std::vector<double> fastvalues;
         std::vector<bool> isnumbers;
+
         size_t length;
         bool initialized = false;
-
+        size_t crcount = 0;
+        ssize_t crposition;
         ssize_t index;
+
+        std::string crprefix = "A";
     
 };

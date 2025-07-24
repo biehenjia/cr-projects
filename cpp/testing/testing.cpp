@@ -33,4 +33,3 @@ int main() {
     std::cout<< duration <<"DONE!\n";
     return 0;
 }
-

@@ -174,5 +174,35 @@ void CRtrig::shift(size_t i){
 }
 
 void CRtrig::print_tree() const {
+    std::cout<<"CRtrig"<<"["<<valueof()<<"]"<<"(";
     
+    std::cout<<")";
+}
+
+std::string CRtrig::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    std::string res = "";
+    if (order != index){
+        for (size_t i = 0; i < operands.size(); i++){ 
+            if (!operands[i]->isnumber()){
+                res += operands[i]->genCode(crposition, order, i, indent+"    ");
+            }
+        }
+    } else { 
+        res += std::format("{}for i in range({}):\n{}    {}{}[i]+={}{}[i+1]\n", 
+            indent, 
+            operands.size()-1,
+            indent,
+            crprefix,crposition,
+            crprefix,crposition
+        );
+    }
+    if (place != -1 && res.size()){
+        res += std::format("{}{}[{}]={}[0]\n",crprefix,parent,place,crprefix,crposition);
+    }
+    std::cout<<std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
+            crprefix,parent,place,
+            crprefix,crposition,
+            crprefix,crposition
+    );
+    return res;
 }

@@ -1,6 +1,5 @@
 #include "crobj.hpp"
 #include <iostream>
-
 CRobj::CRobj(size_t l){
     length = l;
     operands.resize(l);
@@ -33,7 +32,7 @@ double CRobj::initialize() {
         fastvalues[i] = operands[i]->initialize();
     }
 
-    return fastvalues[0];
+    return valueof();
 }
 
 void CRobj::simplify(){
@@ -46,5 +45,28 @@ void CRobj::shift(size_t index) {
     return;
 }
 
+std::string CRobj::prepare(CRobj& root){
 
+    std::string res = "";
+    root.crcount ++;
+    crposition = root.crcount;
+    std::string temp = std::format("{}{}=[",crprefix,crposition);
+    std::string delim = ",";
+
+    for (size_t i = 0; i < operands.size(); i++){
+        if (!operands[i]->isnumber()){
+            res += operands[i]->prepare(root);
+        }
+        if (i == operands.size()-1){
+            delim = "";
+        }
+        temp += std::format("{}{}",fastvalues[i],delim);
+    }
+    temp += "]\n";
+    if (delim != ","){
+        res += temp;
+    }
+    
+    return res;
+}
 

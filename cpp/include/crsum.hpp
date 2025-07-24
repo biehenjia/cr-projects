@@ -21,6 +21,9 @@ class CRsum : public CRobj {
         std::unique_ptr<CRobj> cos() const override;
         void print_tree() const override;
         void simplify() override;
+        
+        std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
+        
         std::unique_ptr<CRobj> copy() const override;
         void shift(size_t index) override;
 
