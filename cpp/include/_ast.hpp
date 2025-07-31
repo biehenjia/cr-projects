@@ -1,6 +1,6 @@
 #include "crobj.hpp"
 #pragma once 
-
+#include "chrono"
 enum class bt {ADD, SUB, MUL, DIV, POW};
 enum class ut {NEG, FAC, EXP, LN, SIN, COS, TAN, COT};
 
@@ -20,7 +20,7 @@ class ASTnode {
 
         void _creval();
         std::vector<double> creval();
-
+        std::string crgen();
         std::unique_ptr<CRobj> cr;
         virtual void view(); 
 };

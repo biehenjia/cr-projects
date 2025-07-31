@@ -32,7 +32,8 @@ PYBIND11_MODULE(pycrlib, m) {
     py::class_<ASTnode, std::shared_ptr<ASTnode>>(m, "ASTnode")
         .def("crinit", &ASTnode::crinit, py::arg("params"))
         .def("creval", &ASTnode::creval)
-        .def("view",   &ASTnode::view);
+        .def("view",   &ASTnode::view)
+        .def("crgen", &ASTnode::crgen);
 
     py::class_<ASTnum, ASTnode, std::shared_ptr<ASTnum>>(m, "ASTnum")
     .def(py::init<double>(), py::arg("value"));

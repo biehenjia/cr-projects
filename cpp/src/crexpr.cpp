@@ -148,14 +148,9 @@ std::string CRexpr::genCode(size_t parent, size_t order, ssize_t place,std::stri
             res += operands[i]->genCode(crposition, order, i, indent);
         }
     }
-    
+    std::cout<<"in gencode crexpr\n";
     if (place != -1 && res.size()){
         res += std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
-            crprefix,parent,place,
-            crprefix,crposition,
-            crprefix,crposition
-        );
-        std::cout<<std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
             crprefix,parent,place,
             crprefix,crposition,
             crprefix,crposition

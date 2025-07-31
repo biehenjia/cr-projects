@@ -180,6 +180,7 @@ void CRtrig::print_tree() const {
 }
 
 std::string CRtrig::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    //std::cout<<"crpos" << crposition << "\n";
     std::string res = "";
     if (order != index){
         for (size_t i = 0; i < operands.size(); i++){ 
@@ -197,12 +198,8 @@ std::string CRtrig::genCode(size_t parent, size_t order, ssize_t place,std::stri
         );
     }
     if (place != -1 && res.size()){
-        res += std::format("{}{}[{}]={}[0]\n",crprefix,parent,place,crprefix,crposition);
+        res += std::format("{}{}{}[{}]={}{}[0]\n",indent, crprefix,parent,place,crprefix,crposition);
     }
-    std::cout<<std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
-            crprefix,parent,place,
-            crprefix,crposition,
-            crprefix,crposition
-    );
+
     return res;
 }

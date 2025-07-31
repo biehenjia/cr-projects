@@ -38,7 +38,6 @@ std::unique_ptr<CRobj> CRsum::copy() const {
 
 // always assume invariant 
 std::unique_ptr<CRobj> CRsum::add(const CRobj& target) const { 
-    std::cout<<"CRsum called here\n";
     if (target.index != index){
         auto result = copy();
         std::unique_ptr<CRobj> temp = nullptr;
@@ -131,14 +130,12 @@ std::unique_ptr<CRobj> CRsum::pow(const CRobj& target) const {
         std::unique_ptr<CRobj> result = std::make_unique< CRnum>(1.0);
         double pv = p->valueof();
         if (pv >= 0 && std::floor(pv) == pv) {
-            std::cout<<"Here!\n";
             size_t exp = size_t(pv);
             
             std::unique_ptr<CRobj> base = copy(); 
             while (exp > 0) {
                 
                 if (exp & 1) {
-                    std::cout<<"glub1\n";
                     if (result->index > base->index){
                         result = std::move(result->mul(*base));
                     } else {
@@ -148,11 +145,9 @@ std::unique_ptr<CRobj> CRsum::pow(const CRobj& target) const {
                 }
                 exp >>= 1;
                 if (exp) {
-                    std::cout<<"glub2\n";
                     base = std::move(base->mul(*base));
                 }  
             }
-            std::cout<<"Here?\n";
             return result;
         } else {
             return std::make_unique< CRexpr>(oc::POW, *this->copy(), *target.copy());
@@ -243,6 +238,8 @@ void CRsum::shift(size_t i ) {
 }
 
 std::string CRsum::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
+    //std::cout<<"crpos" << crposition << "\n";
+    
     std::string res = "";
     if (order != index){
         for (size_t i = 0; i < operands.size(); i++){ 

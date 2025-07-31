@@ -17,12 +17,9 @@ bool CRobj::isnumber() const{
 }
 
 double CRobj::initialize() {
-
     if (initialized) {
         return valueof();
     }
-    
-    
     initialized = true;
     fastvalues.resize(length,0);
     isnumbers.resize(length, false);
@@ -31,7 +28,6 @@ double CRobj::initialize() {
         isnumbers[i] = operands[i]->isnumber();
         fastvalues[i] = operands[i]->initialize();
     }
-
     return valueof();
 }
 

@@ -23,7 +23,7 @@ std::unique_ptr<CRobj> ASTbin::crmake(){
     std::unique_ptr<CRobj> result;
     auto crleft = left->crmake();
     auto  crright = right->crmake();
-    std::cout<<crleft->index<<" "<<crright->index<<"\n";
+    //std::cout<<crleft->index<<" "<<crright->index<<"\n";
     switch (optype) {
         case bt::ADD:
             if (crleft->index > crright->index){ 
@@ -78,16 +78,17 @@ std::unique_ptr<CRobj> ASTun::crmake(){
 }
 
 void ASTnode::crinit(std::vector<size_t> p){
-    std::cout<<"crinit called\n";
-    cr = crmake();
-    
-    std::cout<<"crmade!\n";
-    cr->initialize();
-    std::cout<<"initialized!\n";
-    cr->print_tree();
-    std::cout<<"\n";
     params = p;
+    cr = crmake();
+    cr->initialize();
+    size_t k = 1;
+    for (auto v: p){
+        k *= v;
+    }
+    result.reserve(k);
+}
 
+std::string ASTnode::crgen(){ 
     std::string res;
     std::string indent = "";
     std::string expr = "0"; 
@@ -117,19 +118,15 @@ void ASTnode::crinit(std::vector<size_t> p){
     for (size_t i = 0; i < params.size(); i++) {
         res += std::format("{}{}{} = base[:]\n",indent,cr->crprefix,cr->crposition);
         res += std::format("{}for _{} in range({}):\n", indent, i, params[i]);
-        
         indent += "    ";
         // FIX TO GET CLASS FUNCTIONFOR VALUEOF
         if (i == params.size()-1){
             res += std::format("{}{} = {}{}[0]\n",indent,indexpos,cr->crprefix,cr->crposition);
         }
-        
         res += cr->genCode(0, i, -1, indent);
         res += "\n";
     }
-    std::cout<<res;
-
-    _creval();
+    return res;
 }
 
 
@@ -138,10 +135,8 @@ void ASTnode::crinit(std::vector<size_t> p){
 //nonrecursive for any number of parameters
 
 void ASTnode::_creval(){ 
-
     size_t n = params.size();
     std::vector<size_t> ind;
-
     std::vector<std::unique_ptr<CRobj>> crs;
 
     ind.resize(n,0);
@@ -178,22 +173,11 @@ void ASTnode::_creval(){
 
             i--;
         }
-
-        //std::cout<<ct<<" "<<i<<"\n";
         if (i < 0){
             break;
         }
     }
-
-
-
-    for (size_t i = 0; i < result.size(); i++){ 
-        std::cout<<result[i]<<" ";
-    }
-    std::cout<<"\n";
 }
-
-
 
 std::vector<double> ASTnode::creval(){
     _creval();
