@@ -192,25 +192,51 @@ void CRprod::print_tree() const {
     std::cout<<")";
 }
 
-std::string CRprod::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
-    std::string res = "";
-    if (order != index){
-        for (size_t i = 0; i < operands.size(); i++){ 
-            if (!operands[i]->isnumber()){
+std::string CRprod::genCode(size_t parent,
+                            size_t order,
+                            ssize_t place,
+                            std::string indent) const
+{
+    std::string res;
+
+    if (order != index) {
+        for (size_t i = 0; i < operands.size(); ++i) {
+            if (!operands[i]->isnumber()) {
                 res += operands[i]->genCode(crposition, order, i, indent);
             }
         }
-    } else { 
-        res += std::format("{}for i in range({}):\n{}{}{}[i]*={}{}[i+1]\n", 
-            indent, 
-            operands.size()-1,
-            indent+"    ",
-            crprefix,crposition,
-            crprefix,crposition
-        );
     }
-    if (place != -1 && res.size()){
-        res += std::format("{}{}{}[{}]={}{}[0]\n",indent,crprefix,parent,place,crprefix,crposition);
+    else {
+        size_t n = operands.size();
+
+        // loop header
+        res += indent
+             + "for i in range("
+             + std::to_string(n - 1)
+             + "):\n";
+
+        // multiply operation
+        res += indent
+             + "    "
+             + crprefix
+             + std::to_string(crposition)
+             + "[i]*="
+             + crprefix
+             + std::to_string(crposition)
+             + "[i+1]\n";
     }
+
+    if (place != -1 && !res.empty()) {
+        res += indent
+             + crprefix
+             + std::to_string(parent)
+             + "["
+             + std::to_string(place)
+             + "]="
+             + crprefix
+             + std::to_string(crposition)
+             + "[0]\n";
+    }
+
     return res;
 }

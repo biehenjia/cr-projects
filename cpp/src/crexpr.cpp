@@ -136,20 +136,33 @@ void CRexpr::print_tree() const {
     } std::cout<<")";
 }
 
-std::string CRexpr::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
-    std::string res = "";
-    
-    for (size_t i = 0; i < operands.size(); i++){ 
-        if (!operands[i]->isnumber()){
+std::string CRexpr::genCode(size_t parent,
+                            size_t order,
+                            ssize_t place,
+                            std::string indent) const
+{
+    std::string res;
+
+    for (size_t i = 0; i < operands.size(); ++i) {
+        if (!operands[i]->isnumber()) {
             res += operands[i]->genCode(crposition, order, i, indent);
         }
     }
-    if (place != -1 && res.size()){
-        res += std::format("{}{}{}[{}]={}{}[0] + {}{}[1]\n", indent,
-            crprefix,parent,place,
-            crprefix,crposition,
-            crprefix,crposition
-        );
+
+    if (place != -1 && !res.empty()) {
+        res += indent
+             + crprefix
+             + std::to_string(parent)
+             + "["
+             + std::to_string(place)
+             + "]="
+             + crprefix
+             + std::to_string(crposition)
+             + "[0] + "
+             + crprefix
+             + std::to_string(crposition)
+             + "[1]\n";
     }
+
     return res;
 }

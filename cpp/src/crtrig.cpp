@@ -161,30 +161,94 @@ void CRtrig::print_tree() const {
     std::cout<<")";
 }
 
-std::string CRtrig::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
-    std::string res = "";
-    if (order != index){
-        for (size_t i = 0; i < operands.size(); i++){ 
-            if (!operands[i]->isnumber()){
+
+std::string CRtrig::genCode(size_t parent,
+                            size_t order,
+                            ssize_t place,
+                            std::string indent) const
+{
+    std::string res;
+
+    if (order != index) {
+        for (size_t i = 0; i < operands.size(); ++i) {
+            if (!operands[i]->isnumber()) {
                 res += operands[i]->genCode(crposition, order, i, indent);
             }
         }
-    } else {
-        size_t t   = operands.size()/2;
+    }
+    else {
+        size_t t = operands.size() / 2;
         std::string arr = crprefix + std::to_string(crposition);
-        res += std::format("{}for j in range({}):\n", indent, t-1);
-        res += std::format("{}    r1 = {}[j] * {}[j+{}+1]\n",indent, arr, arr, t);
-        res += std::format("{}    r2 = {}[j+{}] * {}[j+1]\n",indent, arr, t,    arr);
-        res += std::format("{}    z  = r1 + r2\n", indent);
-        res += std::format("{}    r3 = {}[j+{}] * {}[j+{}+1]\n",indent, arr, t,    arr, t);
-        res += std::format("{}    r4 = {}[j] * {}[j+1]\n",indent, arr,    arr);
-        res += std::format("{}    {}[j+{}] = r3 - r4\n", indent, arr,    t);
-        res += std::format("{}    {}[j] = z\n",indent, arr);
+
+        res += indent
+             + "for j in range("
+             + std::to_string(t - 1)
+             + "):\n";
+
+        res += indent
+             + "    r1 = "
+             + arr
+             + "[j] * "
+             + arr
+             + "[j+"
+             + std::to_string(t)
+             + "+1]\n";
+
+        res += indent
+             + "    r2 = "
+             + arr
+             + "[j+"
+             + std::to_string(t)
+             + "] * "
+             + arr
+             + "[j+1]\n";
+
+        res += indent
+             + "    z  = r1 + r2\n";
+
+        res += indent
+             + "    r3 = "
+             + arr
+             + "[j+"
+             + std::to_string(t)
+             + "] * "
+             + arr
+             + "[j+"
+             + std::to_string(t)
+             + "+1]\n";
+
+        res += indent
+             + "    r4 = "
+             + arr
+             + "[j] * "
+             + arr
+             + "[j+1]\n";
+
+        res += indent
+             + "    "
+             + arr
+             + "[j+"
+             + std::to_string(t)
+             + "] = r3 - r4\n";
+
+        res += indent
+             + "    "
+             + arr
+             + "[j] = z\n";
     }
 
-    if (place != -1 && res.size()){
-        res += std::format("{}{}{}[{}]={}{}[0]\n",indent, crprefix,parent,place,crprefix,crposition);
+    if (place != -1 && !res.empty()) {
+        res += indent
+             + crprefix
+             + std::to_string(parent)
+             + "["
+             + std::to_string(place)
+             + "]="
+             + crprefix
+             + std::to_string(crposition)
+             + "[0]\n";
     }
 
     return res;
 }
+

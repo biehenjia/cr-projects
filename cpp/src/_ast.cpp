@@ -87,47 +87,78 @@ void ASTnode::crinit(std::vector<size_t> p){
     }
     result.reserve(k);
 }
-
-std::string ASTnode::crgen(){ 
+std::string ASTnode::crgen() {
     std::string res;
-    std::string indent = "";
-    std::string expr = "0"; 
+    std::string indent;
+    std::string expr = "0";
 
-    for (size_t i = 0; i<params.size(); i++) {
-        expr = std::format("[{} for _ in range({})]", expr,params[i]);
-    } 
+    // build nested list comprehension
+    for (size_t i = 0; i < params.size(); ++i) {
+        expr = "["
+             + expr
+             + " for _ in range("
+             + std::to_string(params[i])
+             + ")]";
+    }
 
     res = "results = " + expr + "\n";
     res += cr->prepare(*cr);
+
+    // build base array
     std::string base = "base = [";
     std::string delim = ",";
-
-    for (size_t i = 0; i < cr->length; i++){
-        if (i == cr->length-1){
-            delim = "";
+    for (size_t i = 0; i < cr->length; ++i) {
+        if (i == cr->length - 1) {
+            delim.clear();
         }
-        base += std::format("{}{}",cr->fastvalues[i],delim);
-    } base += "]\n";
+        base += std::to_string(cr->fastvalues[i]) + delim;
+    }
+    base += "]\n";
     res += base;
 
+    // build index path into results
     std::string indexpos = "results";
-    for (size_t i = 0; i < params.size(); i++){
-        indexpos += std::format("[_{}]",i);
+    for (size_t i = 0; i < params.size(); ++i) {
+        indexpos += "[_" + std::to_string(i) + "]";
     }
 
-    for (size_t i = 0; i < params.size(); i++) {
-        res += std::format("{}{}{} = base[:]\n",indent,cr->crprefix,cr->crposition);
-        res += std::format("{}for _{} in range({}):\n", indent, i, params[i]);
+    // generate nested loops and code bodies
+    for (size_t i = 0; i < params.size(); ++i) {
+        // reset this level's copy of the base
+        res += indent
+             + cr->crprefix
+             + std::to_string(cr->crposition)
+             + " = base[:]\n";
+
+        // loop header
+        res += indent
+             + "for _"
+             + std::to_string(i)
+             + " in range("
+             + std::to_string(params[i])
+             + "):\n";
+
+        // increase indent for body
         indent += "    ";
-        // FIX TO GET CLASS FUNCTIONFOR VALUEOF
-        if (i == params.size()-1){
-            res += std::format("{}{} = {}{}[0]\n",indent,indexpos,cr->crprefix,cr->crposition);
+
+        // on the innermost level, assign back into results
+        if (i + 1 == params.size()) {
+            res += indent
+                 + indexpos
+                 + " = "
+                 + cr->crprefix
+                 + std::to_string(cr->crposition)
+                 + "[0]\n";
         }
+
+        // insert the generated code for this CR node
         res += cr->genCode(0, i, -1, indent);
         res += "\n";
     }
+
     return res;
 }
+
 
 
 // potentially can use CRtable? 
