@@ -125,20 +125,7 @@ void CRprod::simplify() {
     }
 }
 
-void CRprod::shift(size_t i) { 
-    if (index > i){
-        for (size_t j = 0; j < length; j++){ 
-            if (!isnumbers[j]){ 
-                operands[j]->shift(i);
-                fastvalues[j] = operands[j]->valueof();
-            }
-        }
-    } else { 
-        for (size_t j = 0; j < length-1; j++){
-            fastvalues[j] *= fastvalues[j+1 ];
-        }
-    }
-}
+
 
 std::unique_ptr<CRobj> CRprod::exp() const { 
     return std::make_unique< CRexpr>(oc::EXP, *this->copy());
@@ -177,6 +164,10 @@ std::unique_ptr<CRobj> CRprod::copy() const{
             result->fastvalues[i] = fastvalues[i];
             result->isnumbers[i] = isnumbers[i];
         }
+        result->isanumber.resize(isanumber.size());
+        for (size_t i = 0; i < isanumber.size(); i++){
+            result->isanumber[i] = isanumber[i];
+        }
     }
     return result;
 }
@@ -206,14 +197,14 @@ std::string CRprod::genCode(size_t parent, size_t order, ssize_t place,std::stri
     if (order != index){
         for (size_t i = 0; i < operands.size(); i++){ 
             if (!operands[i]->isnumber()){
-                res += operands[i]->genCode(crposition, order, i, indent+"    ");
+                res += operands[i]->genCode(crposition, order, i, indent);
             }
         }
     } else { 
-        res += std::format("{}for i in range({}):\n{}    {}{}[i]*={}{}[i+1]\n", 
+        res += std::format("{}for i in range({}):\n{}{}{}[i]*={}{}[i+1]\n", 
             indent, 
             operands.size()-1,
-            indent,
+            indent+"    ",
             crprefix,crposition,
             crprefix,crposition
         );

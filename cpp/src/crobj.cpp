@@ -25,6 +25,9 @@ double CRobj::initialize() {
     isnumbers.resize(length, false);
 
     for (size_t i = 0; i < length; i++){ 
+        if (operands[i]->isnumber()){
+            isanumber.push_back(i);
+        }
         isnumbers[i] = operands[i]->isnumber();
         fastvalues[i] = operands[i]->initialize();
     }

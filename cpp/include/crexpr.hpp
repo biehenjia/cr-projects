@@ -1,7 +1,7 @@
 #pragma once 
 #include "crobj.hpp"
 
-class CRexpr : public CRobj {
+class CRexpr final: public CRobj {
     public:
 
         CRexpr(oc ot, size_t length);
@@ -22,7 +22,13 @@ class CRexpr : public CRobj {
         void print_tree() const override;
         std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
         double valueof() const override;
-        void shift(size_t index) override;
+        void shift(size_t i) override final {
+            
+            for (size_t j = 0; j < isanumber.size(); j++){ 
+                operands[isanumber[j]]->shift(i);
+                fastvalues[isanumber[j]] = operands[j]->valueof();
+            }
+        }
 
         oc optype;
 

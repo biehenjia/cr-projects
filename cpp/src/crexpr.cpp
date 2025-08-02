@@ -83,6 +83,10 @@ std::unique_ptr<CRobj> CRexpr::copy() const{
             result->fastvalues[i] = fastvalues[i];
             result->isnumbers[i] = isnumbers[i];
         }
+        result->isanumber.resize(isanumber.size());
+        for (size_t i = 0; i < isanumber.size(); i++){
+            result->isanumber[i] = isanumber[i];
+        }
     }
     return result;
 }
@@ -117,15 +121,7 @@ double CRexpr::valueof() const{
     return result; 
 }
 
-void CRexpr::shift(size_t i) {
-    
-    for (size_t j = 0; j < length; j++){
-        if (!isnumbers[j]){
-            operands[j]->shift(i);
-            fastvalues[j] = operands[j]->valueof();
-        }
-    }
-}
+
 
 
 
@@ -148,9 +144,8 @@ std::string CRexpr::genCode(size_t parent, size_t order, ssize_t place,std::stri
             res += operands[i]->genCode(crposition, order, i, indent);
         }
     }
-    std::cout<<"in gencode crexpr\n";
     if (place != -1 && res.size()){
-        res += std::format("{}{}[{}]={}{}[0] + {}{}[1]\n",
+        res += std::format("{}{}{}[{}]={}{}[0] + {}{}[1]\n", indent,
             crprefix,parent,place,
             crprefix,crposition,
             crprefix,crposition

@@ -25,6 +25,10 @@ std::unique_ptr< CRobj>CRtrig::copy() const {
             result->fastvalues[i] = fastvalues[i];
             result->isnumbers[i] = isnumbers[i];
         }
+        result->isanumber.resize(isanumber.size());
+        for (size_t i = 0; i < isanumber.size(); i++){
+            result->isanumber[i] = isanumber[i];
+        }
     }
     return result;
 }
@@ -149,29 +153,7 @@ void CRtrig::simplify() {
 
 }
 
-void CRtrig::shift(size_t i){
-    if (index != i){ 
-        for (size_t j = 0; j < length; j++){ 
-            if (!isnumbers[j]){ 
-                operands[j]->shift(i);
-                fastvalues[j] = operands[j]->valueof();
-            }
-        }
-    } else { 
-        double r1, r2, r3, r4, z;
-        size_t t = length/2;
-        for (size_t j = 0; j < t-1; j++){ 
-            r1 = fastvalues[j] * fastvalues[j+t+1];
-            r2 = fastvalues[j+t] * fastvalues[j+1];
-            z = r1 + r2;
-            r3 = fastvalues[j+t] * fastvalues[j+t+1];
-            r4 = fastvalues[j] * fastvalues[j+1];
-            fastvalues[j+t] = r3-r4;
-            fastvalues[j] = z;
-        }
-    }
-    
-}
+
 
 void CRtrig::print_tree() const {
     std::cout<<"CRtrig"<<"["<<valueof()<<"]"<<"(";
@@ -180,23 +162,26 @@ void CRtrig::print_tree() const {
 }
 
 std::string CRtrig::genCode(size_t parent, size_t order, ssize_t place,std::string indent) const {
-    //std::cout<<"crpos" << crposition << "\n";
     std::string res = "";
     if (order != index){
         for (size_t i = 0; i < operands.size(); i++){ 
             if (!operands[i]->isnumber()){
-                res += operands[i]->genCode(crposition, order, i, indent+"    ");
+                res += operands[i]->genCode(crposition, order, i, indent);
             }
         }
-    } else { 
-        res += std::format("{}for i in range({}):\n{}    {}{}[i]+={}{}[i+1]\n", 
-            indent, 
-            operands.size()-1,
-            indent,
-            crprefix,crposition,
-            crprefix,crposition
-        );
+    } else {
+        size_t t   = operands.size()/2;
+        std::string arr = crprefix + std::to_string(crposition);
+        res += std::format("{}for j in range({}):\n", indent, t-1);
+        res += std::format("{}    r1 = {}[j] * {}[j+{}+1]\n",indent, arr, arr, t);
+        res += std::format("{}    r2 = {}[j+{}] * {}[j+1]\n",indent, arr, t,    arr);
+        res += std::format("{}    z  = r1 + r2\n", indent);
+        res += std::format("{}    r3 = {}[j+{}] * {}[j+{}+1]\n",indent, arr, t,    arr, t);
+        res += std::format("{}    r4 = {}[j] * {}[j+1]\n",indent, arr,    arr);
+        res += std::format("{}    {}[j+{}] = r3 - r4\n", indent, arr,    t);
+        res += std::format("{}    {}[j] = z\n",indent, arr);
     }
+
     if (place != -1 && res.size()){
         res += std::format("{}{}{}[{}]={}{}[0]\n",indent, crprefix,parent,place,crprefix,crposition);
     }

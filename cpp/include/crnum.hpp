@@ -1,7 +1,7 @@
 #pragma once 
 #include "crobj.hpp"
 
-class CRnum : public CRobj {
+class CRnum final: public CRobj {
     public:
         CRnum(double v);
         std::unique_ptr<CRobj> add(const CRobj& target) const override;
@@ -22,7 +22,9 @@ class CRnum : public CRobj {
         void print_tree() const override;
         std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
 
-        void shift(size_t index) override;
+        void shift(size_t index) override final {
+            return;
+        }
         double value;
 
 };

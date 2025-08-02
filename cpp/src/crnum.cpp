@@ -69,9 +69,7 @@ void CRnum::simplify() {
     return;
 }
 
-void CRnum::shift(size_t index){
-    return;
-}
+
 
 void CRnum::print_tree() const { 
     std::cout << "CRnum("<<value<<")";

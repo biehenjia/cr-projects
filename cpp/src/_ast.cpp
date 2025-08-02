@@ -1,7 +1,7 @@
 #include "_ast.hpp"
 #include "crsum.hpp"
 #include "crnum.hpp"
-
+#include "chrono"
 /*
 in python, we construct the AST, and each symbolic node (variable) is initialized with
 the proper start and step and index. Then, we call crinit that passes the number of evaluations 
@@ -40,7 +40,7 @@ std::unique_ptr<CRobj> ASTbin::crmake(){
             }
             break;
         case bt::DIV:
-            result = (crleft->mul(*crright))->pow(*m1);
+            result = (crleft->mul(*crright->pow(*m1)));
             break;
         case bt::SUB:
             if (crleft->index > crright->index){ 
@@ -135,6 +135,12 @@ std::string ASTnode::crgen(){
 //nonrecursive for any number of parameters
 
 void ASTnode::_creval(){ 
+    // start timing
+
+    double time_spent_shifting = 0.0;
+    double loop_time = 0.0;
+
+
     size_t n = params.size();
     std::vector<size_t> ind;
     std::vector<std::unique_ptr<CRobj>> crs;
@@ -148,12 +154,18 @@ void ASTnode::_creval(){
     }
 
     ssize_t i = n-1 ;
+    size_t paramsize = params.size()-1;
+    
+    auto start = std::chrono::high_resolution_clock::now();
     while (true) {
         
-        i = params.size()-1;
+        i = paramsize;
         result.push_back(crs[n-1]->valueof());
 
+        // auto start = std::chrono::high_resolution_clock::now();
         crs[i]->shift(i);
+        // auto end = std::chrono::high_resolution_clock::now();
+        // time_spent_shifting += std::chrono::duration<double, std::milli>(end - start).count();
 
         while (i >= 0){
             ind[i] ++;
@@ -167,8 +179,11 @@ void ASTnode::_creval(){
 
             ind[i] = 0;
             if (i > 0){
+                // auto start = std::chrono::high_resolution_clock::now();
                 crs[i-1]->shift(i-1);
-                crs[i] = crs[i-1]->copy(); 
+                crs[i] = crs[i-1]->copy();
+            //     auto end = std::chrono::high_resolution_clock::now();
+            //     time_spent_shifting += std::chrono::duration<double, std::milli>(end - start).count();
             }
 
             i--;
@@ -177,6 +192,9 @@ void ASTnode::_creval(){
             break;
         }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    loop_time = std::chrono::duration<double, std::milli>(end - start).count();
+    std::cout<<loop_time<<" ms spent shifting\n";
 }
 
 std::vector<double> ASTnode::creval(){

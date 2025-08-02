@@ -72,6 +72,7 @@ class CRobj {
         std::string prepare( CRobj& root);
 
         std::vector<double> fastvalues;
+        std::vector<double> isanumber;
         std::vector<bool> isnumbers;
 
         size_t length;
@@ -81,5 +82,4 @@ class CRobj {
         ssize_t index;
 
         std::string crprefix = "A";
-    
 };

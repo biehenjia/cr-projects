@@ -2,7 +2,7 @@
 #include "crobj.hpp"
 
 
-class CRsum : public CRobj {
+class CRsum final: public CRobj {
     public: 
         CRsum(ssize_t i, size_t l); 
         CRsum(ssize_t i, double x, double h);
@@ -25,6 +25,18 @@ class CRsum : public CRobj {
         std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
         
         std::unique_ptr<CRobj> copy() const override;
-        void shift(size_t index) override;
+
+        void shift(size_t i ) override final {
+            if (index > i){
+                for (size_t j = 0; j < isanumber.size(); j++){ 
+                    operands[isanumber[j]]->shift(i);
+                    fastvalues[isanumber[j]] = operands[j]->valueof();
+                }
+            } else {
+                for (size_t j = 0; j < operands.size()-1; j++){
+                    fastvalues[j] += fastvalues[j+1];
+                }
+            }
+        }
 
 };

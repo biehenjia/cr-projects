@@ -1,7 +1,7 @@
 #pragma once
 #include "crobj.hpp"
 
-class CRprod :public CRobj {
+class CRprod final:public CRobj {
     public: 
         CRprod(ssize_t i, size_t l);
         
@@ -17,7 +17,18 @@ class CRprod :public CRobj {
         std::unique_ptr<CRobj> cos() const override;
 
         void simplify() override;
-        void shift(size_t index) override;
+        void shift(size_t i) override final { 
+            if (index > i){
+                for (size_t j = 0; j < isanumber.size(); j++){ 
+                    operands[isanumber[j]]->shift(i);
+                    fastvalues[isanumber[j]] = operands[j]->valueof();
+                }
+            } else { 
+                for (size_t j = 0; j < length-1; j++){
+                    fastvalues[j] *= fastvalues[j+1 ];
+                }
+            }
+        }
         void print_tree() const override;
         std::string genCode(size_t parent, size_t index, ssize_t place,std::string indent) const override;
 
