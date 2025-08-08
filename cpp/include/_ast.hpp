@@ -14,7 +14,10 @@ class ASTnode {
         std::shared_ptr<ASTnode> right;
         // exposed
         void crinit(std::vector<size_t>);
+
         std::vector<double> result;
+        size_t writeindex = 0;
+        
         std::vector<size_t> params;
 
         void _creval();
