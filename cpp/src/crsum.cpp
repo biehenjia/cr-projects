@@ -9,6 +9,7 @@ CRsum::CRsum(ssize_t i, size_t l)
     index = i;
     length = l;
     operands.resize(length);
+    auxiliary.resize(length);
 }
 
 CRsum::CRsum(ssize_t i, double x, double h)

@@ -2,6 +2,7 @@
 #include "crsum.hpp"
 #include "crnum.hpp"
 #include "chrono"
+#include "profile.hpp"
 /*
 in python, we construct the AST, and each symbolic node (variable) is initialized with
 the proper start and step and index. Then, we call crinit that passes the number of evaluations
@@ -114,7 +115,6 @@ std::string ASTnode::crgen()
     std::string indent;
     std::string expr = "0";
 
-    // build nested list comprehension
     for (size_t i = 0; i < params.size(); ++i)
     {
         expr = "[" + expr + " for _ in range(" + std::to_string(params[i]) + ")]";
@@ -123,7 +123,6 @@ std::string ASTnode::crgen()
     res = "results = " + expr + "\n";
     res += cr->prepare(*cr);
 
-    // build base array
     std::string base = "base = [";
     std::string delim = ",";
     for (size_t i = 0; i < cr->length; ++i)
@@ -137,7 +136,6 @@ std::string ASTnode::crgen()
     base += "]\n";
     res += base;
 
-    // build index path into results
     std::string indexpos = "results";
     for (size_t i = 0; i < params.size(); ++i)
     {
@@ -166,82 +164,147 @@ std::string ASTnode::crgen()
 // maybe optimization?
 // nonrecursive for any number of parameters
 
-/* 
+// void ASTnode::_creval()
+// {
+//     using Clock  = std::chrono::steady_clock;
+//     using Millis = std::chrono::duration<double, std::milli>;
+
+//     // timing accumulators
+//     double total_shift   = 0.0;
+//     double total_copy    = 0.0;
+//     double total_push    = 0.0;
+//     double total_eval    = 0.0;
+//     double total_setup   = 0.0;   // build initial copies, etc.
+
+//     // event counters
+//     std::uint64_t cnt_shift = 0;
+//     std::uint64_t cnt_copy  = 0;
+//     std::uint64_t cnt_push  = 0;
+//     std::uint64_t cnt_eval  = 0;
+
+//     const size_t n = params.size();
+//     if (n == 0) {
+//         std::cout
+//             << "Total loop time: 0.0 ms\n"
+//             << "  valueof():     0.0 ms (0 ops)\n"
+//             << "  push:          0.0 ms (0 ops)\n"
+//             << "  shifting:      0.0 ms (0 ops)\n"
+//             << "  copying:       0.0 ms (0 ops)\n"
+//             << "  setup:         0.0 ms\n";
+//         return;
+//     }
+
+//     std::vector<size_t> ind(n, 0);
+//     std::vector<std::unique_ptr<CRobj>> crs;
+//     crs.reserve(n);
+
+//     // ---- setup (timed as setup, not part of the loop) ----
+//     {
+//         CREVAL_TIME_BLOCK(total_setup);
+//         crs.push_back(cr->copy());
+//         for (size_t i = 1; i < n; ++i) {
+//             CREVAL_TIME_BLOCK(total_copy);
+//             crs.push_back(crs[i - 1]->copy());
+//             ++cnt_copy;
+//         }
+//     }
+
+//     const size_t paramsize = n - 1;
+
+//     double* out = result.data();
+//     double  val = 0.0;
+
+//     double* fastvalue = crs.back()->fastvalues.data();
+
+//     auto loop_start = Clock::now();
+
+//     while (true) {
+//         // 1) "evaluate" hot value
+//         {
+//             CREVAL_TIME_BLOCK(total_eval);
+//             val = fastvalue[0];
+//             ++cnt_eval;
+//         }
+
+//         // 2) store / push
+//         {
+//             CREVAL_TIME_BLOCK(total_push);
+//             *out++ = val;
+//             ++cnt_push;
+//         }
+
+//         // 3) shift at the last index
+//         {
+//             CREVAL_TIME_BLOCK(total_shift);
+//             crs[paramsize]->shift(paramsize);
+//             ++cnt_shift;
+//         }
+
+//         // 4) advance odometer
+//         ssize_t i = static_cast<ssize_t>(paramsize);
+//         while (i >= 0) {
+//             ind[static_cast<size_t>(i)]++;
+//             if (ind[static_cast<size_t>(i)] < params[static_cast<size_t>(i)]) {
+//                 // copy forward for the roll-over indices
+//                 for (size_t j = static_cast<size_t>(i) + 1; j < n; ++j) {
+//                     CREVAL_TIME_BLOCK(total_copy);
+//                     crs[j] = crs[j - 1]->copy();
+//                     ++cnt_copy;
+//                     ind[j] = 0;
+//                 }
+//                 fastvalue = crs.back()->fastvalues.data();
+//                 break;
+//             }
+
+//             // reset this digit and cascade
+//             ind[static_cast<size_t>(i)] = 0;
+//             if (i > 0) {
+//                 {
+//                     CREVAL_TIME_BLOCK(total_shift);
+//                     crs[static_cast<size_t>(i) - 1]->shift(static_cast<size_t>(i) - 1);
+//                     ++cnt_shift;
+//                 }
+//                 {
+//                     CREVAL_TIME_BLOCK(total_copy);
+//                     crs[static_cast<size_t>(i)] = crs[static_cast<size_t>(i) - 1]->copy();
+//                     ++cnt_copy;
+//                 }
+//             }
+//             --i;
+//         }
+
+//         if (i < 0) break;
+//     }
+
+//     const double total_loop = Millis(Clock::now() - loop_start).count();
+
+//     auto per_call = [](double ms, std::uint64_t cnt) -> double {
+//         return cnt ? (ms * 1e6 / static_cast<double>(cnt)) : 0.0; // µs/op
+//     };
+
+//     std::cout.setf(std::ios::fixed);
+//     std::cout.precision(3);
+
+//     std::cout
+//         << "Total loop time: " << total_loop  << " ms\n"
+//         << "  value():       " << total_eval << " ms  (" << cnt_eval  << " ops, "
+//         << per_call(total_eval, cnt_eval) << " us/op)\n"
+//         << "  push:          " << total_push << " ms  (" << cnt_push  << " ops, "
+//         << per_call(total_push, cnt_push) << " us/op)\n"
+//         << "  shifting:      " << total_shift << " ms (" << cnt_shift << " ops, "
+//         << per_call(total_shift, cnt_shift) << " us/op)\n"
+//         << "  copying:       " << total_copy  << " ms (" << cnt_copy  << " ops, "
+//         << per_call(total_copy, cnt_copy) << " us/op)\n"
+//         << "  setup:         " << total_setup << " ms\n";
+// }
+
+
+
+
 void ASTnode::_creval()
 {
-    // start timing
-
-    double time_spent_shifting = 0.0;
-    double loop_time = 0.0;
-
-    size_t n = params.size();
-    std::vector<size_t> ind;
-    std::vector<std::unique_ptr<CRobj>> crs;
-
-    ind.resize(n, 0);
-    crs.reserve(n);
-
-    crs.push_back(cr->copy());
-    for (size_t i = 1; i < n; i++)
-    {
-        crs.push_back(crs[i - 1]->copy());
-    }
-
-    ssize_t i = n - 1;
-    size_t paramsize = params.size() - 1;
-
-    auto start = std::chrono::high_resolution_clock::now();
-    while (true)
-    {
-
-        i = paramsize;
-        result.push_back(crs[n - 1]->valueof());
-
-        // auto start = std::chrono::high_resolution_clock::now();
-        crs[i]->shift(i);
-        // auto end = std::chrono::high_resolution_clock::now();
-        // time_spent_shifting += std::chrono::duration<double, std::milli>(end - start).count();
-
-        while (i >= 0)
-        {
-            ind[i]++;
-            if (ind[i] < params[i])
-            {
-                for (size_t j = i + 1; j < n; j++)
-                {
-                    crs[j] = crs[j - 1]->copy();
-                    ind[j] = 0;
-                }
-                break;
-            }
-
-            ind[i] = 0;
-            if (i > 0)
-            {
-                // auto start = std::chrono::high_resolution_clock::now();
-                crs[i - 1]->shift(i - 1);
-                crs[i] = crs[i - 1]->copy();
-                //     auto end = std::chrono::high_resolution_clock::now();
-                //     time_spent_shifting += std::chrono::duration<double, std::milli>(end - start).count();
-            }
-
-            i--;
-        }
-        if (i < 0)
-        {
-            break;
-        }
-    }
-    auto end = std::chrono::high_resolution_clock::now();
-    loop_time = std::chrono::duration<double, std::milli>(end - start).count();
-    std::cout << loop_time << " ms spent shifting\n";
-}
-*/
-
-void ASTnode::_creval()
-{
-    using Clock        = std::chrono::steady_clock;
-    using Millis       = std::chrono::duration<double, std::milli>;
+    using Clock = std::chrono::steady_clock;
+    using Millis = std::chrono::duration<double, std::milli>;
 
     double total_shift = 0.0;
     double total_copy  = 0.0;
@@ -251,6 +314,10 @@ void ASTnode::_creval()
     size_t n = params.size();
     std::vector<size_t> ind(n,0);
     std::vector<std::unique_ptr<CRobj>> crs;
+    // fast values pointers
+    std::vector<double*> fvptrs;
+
+
     crs.reserve(n);
 
     // build initial copies
@@ -262,31 +329,34 @@ void ASTnode::_creval()
     }
 
     size_t paramsize = n - 1;
-    auto loop_start = Clock::now();
+
+    
 
     double* out = result.data();
     double val;
 
+    double* fastvalue = crs.back()->fastvalues.data();
+    auto loop_start = Clock::now();
     while (true) {
         // 1) push_back timing
 
         {
-            auto t0 = Clock::now();
-            val = crs.back()->valueof();
-            total_eval += Millis(Clock::now() - t0).count();
+            //auto t0 = Clock::now();
+            val = fastvalue[0];
+            //total_eval += Millis(Clock::now() - t0).count();
         }
 
         {
-            auto t0 = Clock::now();
+            //auto t0 = Clock::now();
             *out++ =  val;
-            total_push += Millis( Clock::now() - t0 ).count();
+            //total_push += Millis( Clock::now() - t0 ).count();
         }
 
         // 2) shifting at the last index
         {
-            auto t1 = Clock::now();
+            //auto t1 = Clock::now();
             crs[paramsize]->shift(paramsize);
-            total_shift += Millis( Clock::now() - t1 ).count();
+            //total_shift += Millis( Clock::now() - t1 ).count();
         }
 
         // 3) advance the odometer
@@ -301,6 +371,7 @@ void ASTnode::_creval()
                     total_copy += Millis( Clock::now() - t2 ).count();
                     ind[j] = 0;
                 }
+                fastvalue = crs.back()->fastvalues.data();
                 break;
             }
 
@@ -308,14 +379,14 @@ void ASTnode::_creval()
             ind[i] = 0;
             if (i > 0) {
                 // shifting the next-up digit
-                auto t3 = Clock::now();
+                //auto t3 = Clock::now();
                 crs[i-1]->shift(i-1);
-                total_shift += Millis( Clock::now() - t3 ).count();
+                //total_shift += Millis( Clock::now() - t3 ).count();
 
                 // then copy it forward
-                auto t4 = Clock::now();
+                //auto t4 = Clock::now();
                 crs[i] = crs[i-1]->copy();
-                total_copy += Millis( Clock::now() - t4 ).count();
+                //total_copy += Millis( Clock::now() - t4 ).count();
             }
             --i;
         }

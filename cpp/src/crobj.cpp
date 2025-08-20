@@ -1,5 +1,8 @@
 #include "crobj.hpp"
 #include <iostream>
+
+
+
 CRobj::CRobj(size_t l)
 {
     length = l;
@@ -80,3 +83,4 @@ std::string CRobj::prepare(CRobj &root)
 
     return res;
 }
+

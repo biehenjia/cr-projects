@@ -1,0 +1,83 @@
+cmake_minimum_required(VERSION 3.15)
+project(pycr LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Default to Release for single-config generators (Ninja/Makefiles).
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+# --- pybind11 ---
+include(FetchContent)
+FetchContent_Declare(
+  pybind11
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG        v3.0.0
+)
+FetchContent_MakeAvailable(pybind11)
+
+file(GLOB SOURCE_FILES
+  "${CMAKE_SOURCE_DIR}/src/*.cpp"
+  "${CMAKE_SOURCE_DIR}/bindings/*.cpp"
+)
+
+pybind11_add_module(pycr ${SOURCE_FILES})
+
+target_include_directories(pycr PRIVATE
+  "${CMAKE_SOURCE_DIR}/include"
+  "${CMAKE_SOURCE_DIR}/src"
+)
+
+# ---- Profiling define (enables your CREVAL_TIME_BLOCKs) ----
+# Toggle by setting -DCREVAL_PROFILE=ON/OFF when configuring.
+option(CREVAL_PROFILE "Enable timers inside _creval()" ON)
+target_compile_definitions(pycr PRIVATE
+  $<$<BOOL:${CREVAL_PROFILE}>:CREVAL_PROFILE>
+)
+
+# ---- Optimizations per compiler/config ----
+if(MSVC)
+  target_compile_options(pycr PRIVATE
+    $<$<CONFIG:Release>:/O2 /GL /fp:fast>
+  )
+  target_link_options(pycr PRIVATE
+    $<$<CONFIG:Release>:/LTCG>
+  )
+else()
+  target_compile_options(pycr PRIVATE
+    $<$<CONFIG:Release>:-O3 -ffast-math>
+  )
+  # Prefer CMake IPO over raw -flto; it sets compile+link correctly.
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT ipo_supported OUTPUT ipo_msg)
+  if(ipo_supported)
+    set_property(TARGET pycr PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+  endif()
+endif()
+
+# ---- MinGW static bits (kept from your original) ----
+if (MINGW)
+  target_link_options(pycr PRIVATE -static-libgcc -static-libstdc++)
+  target_link_libraries(pycr PRIVATE pybind11::module "-Wl,-Bstatic" "-lwinpthread" "-Wl,-Bdynamic")
+else()
+  target_link_libraries(pycr PRIVATE pybind11::module)
+endif()
+
+# ---- Output names (kept) ----
+if (WIN32)
+  set_target_properties(pycr PROPERTIES
+    OUTPUT_NAME "pycrlib"
+    PREFIX ""
+    SUFFIX ".pyd"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  )
+else()
+  set_target_properties(pycr PROPERTIES
+    OUTPUT_NAME "pycrlib"
+    PREFIX ""
+    SUFFIX ".so"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  )
+endif()

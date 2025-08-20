@@ -5,6 +5,10 @@
 #include <iostream>
 #include <memory>
 
+// Consider for CRSUM shift: NTT/FFT binomial transform
+// for shift array P[q]/q! = \sum^{\min(q,n-1)}_k=0 A_0[k]_k! \cdot 1/(q-k)!
+// theoretical optimization, could implement one day.
+
 class CRsum;
 class CRnum;
 class CRprod;
@@ -39,11 +43,19 @@ enum class oc {
     COT
 };
 
+template <class T> 
+inline void shiftsum(T* __restrict a, std::size_t n, T* __restrict out, std::size_t t) noexcept {
+
+}
+
 class CRobj {
     public:
         CRobj(){}; 
         CRobj(size_t l);
         virtual ~CRobj() =default ;
+
+        //for vectorization
+        mutable std::vector<double> auxiliary;
 
         virtual std::unique_ptr<CRobj> add(const CRobj& t) const = 0;
         virtual std::unique_ptr<CRobj> mul(const CRobj& t) const= 0;

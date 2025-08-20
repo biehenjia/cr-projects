@@ -26,17 +26,28 @@ class CRsum final: public CRobj {
         
         std::unique_ptr<CRobj> copy() const override;
 
-        void shift(size_t i ) override final {
+        inline void shift(size_t i ) noexcept override final {
             if (index > i){
                 for (size_t j = 0; j < isanumber.size(); j++){ 
                     operands[isanumber[j]]->shift(i);
-                    fastvalues[isanumber[j]] = operands[j]->valueof();
+                    fastvalues[isanumber[j]] = operands[isanumber[j]]->valueof();
                 }
+                return;
             } else {
-                for (size_t j = 0; j < operands.size()-1; j++){
-                    fastvalues[j] += fastvalues[j+1];
+                for (size_t j = 0; j < operands.size()-1; j++){ 
+                    fastvalues[i] += fastvalues[i+1];
                 }
             }
+
+            // const double* __restrict src = fastvalues.data();
+            // double* __restrict dst = auxiliary.data();
+            // size_t j = 0;
+            // const size_t n = operands.size() -1;
+            // for (; j < n; j++){
+            //     dst[j] = src[j] + src[j+1];
+            // }
+            // dst[n] = src[n];
+            // fastvalues.swap(auxiliary);
         }
 
 };

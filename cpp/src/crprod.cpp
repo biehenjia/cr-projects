@@ -8,6 +8,7 @@ CRprod::CRprod(ssize_t i, size_t l)
     length = l;
     operands.resize(l);
     index = i;
+    auxiliary.resize(l);
 }
 
 std::unique_ptr<CRobj> CRprod::add(const CRobj &target) const
